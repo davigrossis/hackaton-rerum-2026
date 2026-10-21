@@ -12,7 +12,7 @@ source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements-dev.txt
 
 streamlit run app.py               # abra http://localhost:8501
-pytest -q                          # testes
+pytest -q                          # todos os testes; o que cada arquivo testa: tests/README.md
 ruff check . && ruff format .      # lint e formatação
 ```
 
@@ -21,10 +21,10 @@ ruff check . && ruff format .      # lint e formatação
 |---|---|
 | `app.py`, `interface/` | Interface do usuário |
 | `motor/` | Motor de inferência, memória de trabalho e módulo de explicação |
-| `conhecimento/` | Base de conhecimento: regras e perguntas em YAML |
+| `conhecimento/` | Base de conhecimento: regras, perguntas e catálogo de produtos da CONAB em YAML |
 | `dominio/` | Indicadores econômicos, dados de mercado e diagnóstico |
 | `dados/` | Fontes de dados externas (snapshots) e casos de teste |
-| `tests/` | Testes (pytest) |
+| `tests/` | Testes (pytest); o que cada arquivo testa: `tests/README.md` |
 | `docs/` | Processo com IA, arquitetura e regras |
 
 Convenções e regras de trabalho, para a equipe e para os agentes de IA: `AGENTS.md` (o `CLAUDE.md` só importa esse arquivo). Detalhes da base de preços: `base.md`.

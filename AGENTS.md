@@ -38,6 +38,7 @@ motor/                 # motor GENÉRICO: não conhece leite nem economia
 conhecimento/          # BASE DE CONHECIMENTO, explícita e versionada
   regras.yaml          #   regras de produção
   perguntas.yaml       #   perguntas, unidades, faixas válidas, texto de ajuda
+  mercado.yaml         #   produtos da CONAB: id, nome na base, unidade, faixa plausível
 dominio/               # código específico do T3
   indicadores.py       #   fórmulas: COE, COT, CT, custo/L, margens, % lactação...
   mercado.py           #   dados/raw → fatos externos (preços CONAB por UF)
@@ -45,22 +46,23 @@ dominio/               # código específico do T3
 dados/
   raw/                 #   snapshots originais (CONAB/IBGE) + FONTES.md; não editar
   casos/               #   fazendas-exemplo: demo e testes de casos conhecidos
-  baixar_dados.py      #   atualiza os snapshots (precisa de internet; nunca na demo)
-tests/                 # pytest
+  rascunho_catalogo.py #   imprime rascunho de produto da CONAB para o mercado.yaml
+tests/                 # pytest; o que cada arquivo testa: tests/README.md
 docs/                  # arquitetura, catálogo de regras, processo com IA, apresentação
 ```
 
 ## Comandos
+Tudo na raiz do repositório. Na primeira vez depois de clonar, rode as 3 primeiras linhas: criam o ambiente e instalam as dependências.
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements-dev.txt
 
 streamlit run app.py               # http://localhost:8501
-pytest -q                          # todos os testes
-pytest tests/test_casos.py -q      # só os casos conhecidos
+pytest -q                          # todos os testes; o que cada arquivo testa: tests/README.md
+pytest tests/test_casos.py -q      # só os casos conhecidos (o arquivo chega com a #11)
 ruff check . && ruff format .      # lint e formatação
-python dados/baixar_dados.py       # atualiza dados de mercado (com internet)
+python -m dados.rascunho_catalogo sorgo  # rascunho de produto para o mercado.yaml
 ```
 
 ## Base de conhecimento (`conhecimento/regras.yaml`)
@@ -83,14 +85,15 @@ regras:
 - CF da conclusão = `cf da regra × menor CF das premissas`. Premissa com CF < 0,2 conta como falsa. Se duas regras chegam à mesma conclusão: `cf1 + cf2 × (1 − cf1)`.
 - Conflito: maior `prioridade` → mais condições → ordem no arquivo. Cada regra dispara no máximo uma vez.
 - Toda regra precisa de `id` único, `descricao`, `fonte` e de ao menos um caso de teste que a exercite.
+- Produtos da CONAB ficam em `conhecimento/mercado.yaml`, não no código. Para incluir um: `python -m dados.rascunho_catalogo <nome ou id>`, cole a entrada no YAML e preencha os campos `PREENCHER`. Os testes do produto são gerados sozinhos.
 
 ## Convenções de código
 - Português nos nomes do domínio, textos da interface, regras e docs. Identificadores em `snake_case`, sem acento: `custo_por_litro`, `vacas_lactacao`.
-- Toda variável tem unidade declarada em `perguntas.yaml` ou no indicador. Dinheiro em R$, volume em litros, período de referência = 1 mês.
+- Toda variável tem unidade declarada em `perguntas.yaml`, `mercado.yaml` ou no indicador. Dinheiro em R$, volume em litros, período de referência = 1 mês.
 - `motor/` não importa `dominio/`, `interface/` nem Streamlit. `dominio/` não importa Streamlit.
 - Funções pequenas e puras. Classe só quando simplifica (ex.: `Fato`, `Regra`). Type hints nas funções públicas.
 - Campo opcional vazio **não vira zero**: o fato não entra na memória e as regras que dependem dele não disparam.
-- Nenhum acesso à rede em tempo de execução. Só `dados/baixar_dados.py` usa internet.
+- Nenhum acesso à rede no código. A base da CONAB é atualizada à mão: o arquivo novo substitui o de `dados/raw/` e a data vai para o `FONTES.md`. Depois, rode `pytest -q`: os testes do catálogo apontam id que mudou de nome e valor fora da faixa.
 
 ## Git e commits
 - `main` sempre roda. Uma branch por issue: `feat/12-regras-causas`, `fix/31-divisao-zero`.

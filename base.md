@@ -171,7 +171,7 @@ Os limiares abaixo são ilustrativos e precisam ser validados com fonte na #8 e 
 
 | # | Ideia | Como funciona | Issue |
 |---|---|---|---|
-| 1 | Variáveis externas declaradas na base | Cada fato de mercado entra no `variaveis.yaml` com fonte, `id_produto`, nível, unidade e faixa plausível. O leitor só aceita produtos da lista e descarta valores fora da faixa | #2, #3, #4 |
+| 1 | Variáveis externas declaradas na base | Cada fato de mercado entra no `conhecimento/mercado.yaml` com fonte, `id_produto`, nível, unidade e faixa plausível. O leitor só aceita produtos da lista e descarta valores fora da faixa | #2, #3, #4 |
 | 2 | Fatos de mercado por UF | Preço do leite (mês da consulta, média, mín. e máx. de 12m), milho, sorgo, soja, diesel, boi gordo e troca leite:milho (mês e média). Cada fato com fonte e período | #4 |
 | 3 | Preço abaixo do mercado | Preço da fazenda abaixo do preço da UF **no mesmo mês** (ex.: −5%) → indicador `preco_leite = abaixo_mercado` → causa "preço recebido" → recomendações: negociar com o laticínio, buscar bonificação por qualidade e volume, avaliar cooperativa | #12 |
 | 4 | Momento ruim para comprar concentrado | Troca leite:milho da UF abaixo da média de 12m → recomendação de compra coletiva e de planejar o estoque de milho para quando a troca estiver favorável | #12 |
@@ -184,4 +184,4 @@ Os limiares abaixo são ilustrativos e precisam ser validados com fonte na #8 e 
 | 11 | Contexto para a apresentação | Fatia do produtor no varejo (~53% em MG) e sazonalidade do preço | #23 |
 | 12 | Receita com venda de animais (baixa prioridade) | Boi gordo como referência para vaca de descarte, com desconto a validar | #12 |
 
-**Próximos passos na #4:** criar o `dados/raw/FONTES.md` com link, data do download e licença. O leitor segue as seções 2 e 9.
+**Feito na #4:** `dados/raw/FONTES.md` com link, data do download e licença; catálogo de produtos em `conhecimento/mercado.yaml`; leitor em `dominio/mercado.py`, que segue as seções 2 e 9.
