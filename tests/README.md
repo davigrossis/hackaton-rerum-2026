@@ -14,6 +14,7 @@ pytest tests/test_inferencia.py -v         # só o motor de inferência
 |---|---|---|
 | `test_esqueleto.py` | o projeto de pé: a base de conhecimento carrega, o app abre e o `CLAUDE.md` só importa o `AGENTS.md` | "O projeto roda?" |
 | `test_contratos.py` | contratos da base de conhecimento, validações de carga, memória de trabalho e APIs do motor | "Os contratos e regras estão consistentes?" |
+| `test_indicadores.py` | 21 indicadores econômicos e zootécnicos calculados à mão, opcionais, divisores zero e paridade YAML | "Os cálculos econômicos e zootécnicos estão corretos e protegidos?" |
 | `test_inferencia.py` | o motor de inferência: premissas, ciclo por camada, resolução de conflito, bloqueio de fato único e CF, com a fazenda de exemplo do guia | "O motor raciocina como o guia descreve?" |
 | `test_mercado.py` | **a saída**: o que `fatos_mercado` devolve | "O sistema calcula os fatos certos?" |
 | `test_catalogo_mercado.py` | **a entrada**: o catálogo `conhecimento/mercado.yaml` e o script de rascunho | "O sistema está lendo os produtos certos da base?" |
@@ -25,9 +26,16 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 ### `test_contratos.py`
 - Valida o carregamento da base real e da base fixture de exemplo (`tests/fixtures/base_exemplo/`);
 - Confere se as variáveis externas batem com o que `fatos_mercado` devolve em nomes e unidades;
-- Testa 22 casos de preenchimento incorreto de regras, perguntas e variáveis, garantindo mensagens de erro claras;
+- Testa 27 casos de preenchimento incorreto de regras, perguntas e variáveis (incluindo ciclo, conclusões e duplicatas em opcionais, e camada no `$nome`), garantindo mensagens de erro claras;
 - Testa operações da memória de trabalho (adição, combinação de CF, valor único vs multivalorado, cópia independente);
 - Testa `perguntas_pendentes` v0 e integridade do motor (não importa domínio, interface ou Streamlit).
+
+### `test_indicadores.py`
+- Valida os 21 indicadores econômicos e zootécnicos contra uma fazenda de referência conferida à mão em 2 casas decimais;
+- Testa comportamento de opcionais ausentes e valores `None` nas somas de `receita_total`, `custo_alimentar` e `coe`;
+- Testa proteção de divisores zero e negativos em todos os denominadores (produção, rebanho, área, trabalhadores, COE e preço UF);
+- Garante imutabilidade dos dicionários de entrada e externos;
+- Garante paridade 1:1 entre a tupla `INDICADORES` em código e o grupo `calculadas` de `conhecimento/variaveis.yaml`.
 
 ### `test_inferencia.py`
 - `avaliar_premissas`: fato ausente torna a premissa falsa (inclusive com `!=`), `$nome` usa o menor CF dos dois fatos, valor com CF abaixo de 0,2 conta como ausente, fato com vários valores;

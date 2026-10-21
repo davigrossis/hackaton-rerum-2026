@@ -57,10 +57,26 @@ def test_todas_calculadas_tem_entradas_validas():
     for c in calculadas:
         assert c.formula and c.formula.strip()
         assert c.entradas, f"Calculada '{c.nome}' sem entradas"
+        assert set(c.entradas).isdisjoint(set(c.opcionais)), (
+            f"Calculada '{c.nome}' com sobreposição entre entradas e opcionais"
+        )
         for entrada in c.entradas:
             assert entrada in base.variaveis, (
                 f"Entrada '{entrada}' de '{c.nome}' não existe"
             )
+            assert base.variaveis[entrada].grupo != "conclusoes"
+        for opt in c.opcionais:
+            assert opt in base.variaveis, f"Opcional '{opt}' de '{c.nome}' não existe"
+            assert base.variaveis[opt].grupo != "conclusoes"
+
+    assert base.variaveis["receita_total"].opcionais == ("outras_receitas",)
+    assert base.variaveis["custo_alimentar"].opcionais == ("custo_mineral",)
+    assert base.variaveis["coe"].opcionais == (
+        "custo_mineral",
+        "custo_sanidade_reproducao",
+        "custo_energia_combustivel",
+        "custo_outros",
+    )
 
 
 def test_externas_batem_com_fatos_mercado():
@@ -195,6 +211,36 @@ regras:
         ),
         (
             "variaveis",
+            "entradas: [p_num]",
+            "entradas: [p_num]\n    opcionais: [fantasma]",
+            "opcional 'fantasma' não declarada",
+        ),
+        (
+            "variaveis",
+            "entradas: [p_num]",
+            "entradas: [p_num]\n    opcionais: [p_num]",
+            "não pode estar em 'entradas' e 'opcionais' simultaneamente",
+        ),
+        (
+            "variaveis",
+            "entradas: [p_num]",
+            "entradas: [c_ind]",
+            "entrada 'c_ind' não pode ser do grupo 'conclusoes'",
+        ),
+        (
+            "variaveis",
+            "entradas: [p_num]",
+            "entradas: [p_num]\n    opcionais: [c_ind]",
+            "opcional 'c_ind' não pode ser do grupo 'conclusoes'",
+        ),
+        (
+            "variaveis",
+            "entradas: [p_num]",
+            "entradas: [v_calc]",
+            "ciclo detectado nas variáveis calculadas: v_calc -> v_calc",
+        ),
+        (
+            "variaveis",
             "unico: true",
             "unico: talvez",
             "campo 'unico' obrigatório e deve ser booleano",
@@ -267,6 +313,11 @@ regras:
         "faixa_invertida",
         "escolha_sem_opcoes",
         "calculada_com_entrada_inexistente",
+        "calculada_com_opcional_inexistente",
+        "calculada_com_opcional_duplicado_em_entradas",
+        "calculada_com_conclusao_em_entradas",
+        "calculada_com_conclusao_em_opcionais",
+        "calculada_com_ciclo",
         "conclusao_sem_unico_booleano",
         "categoria_sem_valores",
         "prefixo_id_incoerente_camada",

@@ -76,12 +76,13 @@ versao: "0.1"
 
 calculadas:
   - nome: receita_total
-    descricao: Faturamento total com a venda de leite
+    descricao: Faturamento total com a venda de leite somado a outras receitas
     tipo: numero
     unidade: R$
-    formula: producao_litros * preco_leite_fazenda
-    entradas: [producao_litros, preco_leite_fazenda]
-    fonte: "Fórmula de receita"
+    formula: receita_leite + outras_receitas
+    entradas: [receita_leite]
+    opcionais: [outras_receitas]
+    fonte: "Fórmula de receita total"
 
 externas:
   - nome: preco_leite_uf
@@ -187,8 +188,20 @@ def por_que(
 ```python
 # dominio/indicadores.py (#6)
 def calcular_indicadores(
-    entradas: dict[str, float], externos: dict[str, float]
+    entradas: dict[str, float | None],
+    externos: dict[str, float | None],
+    base: Base | None = None,
 ) -> dict[str, dict]: ...
+
+
+# Retorno por indicador calculado:
+# {
+#     "valor": float,
+#     "unidade": str,
+#     "formula": str,
+#     "entradas": tuple[str, ...],  # apenas variáveis presentes e usadas
+#     "detalhe": str,  # texto explicativo de parcelas somadas e omitidas
+# }
 
 
 # dominio/diagnostico.py (#10)

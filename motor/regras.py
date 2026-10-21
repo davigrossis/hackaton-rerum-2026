@@ -65,6 +65,7 @@ class Variavel:
     camada: str | None = None
     formula: str | None = None
     entradas: tuple[str, ...] = ()
+    opcionais: tuple[str, ...] = ()
     fonte: str | None = None
 
 
@@ -124,6 +125,35 @@ def _validar_nome(nome: str, onde: str) -> None:
         raise ValueError(
             f"{onde}: nome '{nome}' inválido. Deve ser snake_case sem acento (^[a-z][a-z0-9_]*$)"
         )
+
+
+def _detectar_ciclo_calculadas(calculadas: dict[str, Variavel]) -> None:
+    """Verifica se há ciclos de dependência entre variáveis calculadas."""
+    estado: dict[str, int] = {
+        nome: 0 for nome in calculadas
+    }  # 0=não visitado, 1=na pilha, 2=visitado
+    caminho: list[str] = []
+
+    def dfs(nome: str) -> None:
+        estado[nome] = 1
+        caminho.append(nome)
+        v = calculadas[nome]
+        for dep in v.entradas + v.opcionais:
+            if dep in calculadas:
+                if estado[dep] == 1:
+                    idx = caminho.index(dep)
+                    ciclo = " -> ".join(caminho[idx:] + [dep])
+                    raise ValueError(
+                        f"variaveis.yaml: ciclo detectado nas variáveis calculadas: {ciclo}"
+                    )
+                if estado[dep] == 0:
+                    dfs(dep)
+        caminho.pop()
+        estado[nome] = 2
+
+    for nome in calculadas:
+        if estado[nome] == 0:
+            dfs(nome)
 
 
 def _validar_camada(var: Variavel, camada: str, onde: str) -> None:
@@ -336,6 +366,29 @@ def carregar_base(pasta: Path = PASTA_CONHECIMENTO) -> Base:
         entradas = v.get("entradas")
         if not isinstance(entradas, list) or not entradas:
             raise ValueError(f"{onde}: 'entradas' deve ser uma lista não vazia")
+        for e in entradas:
+            _validar_nome(str(e), f"{onde}, entrada")
+        if len(entradas) != len(set(entradas)):
+            raise ValueError(f"{onde}: 'entradas' possui itens duplicados")
+
+        opcionais_raw = v.get("opcionais")
+        if opcionais_raw is None:
+            opcionais_tuple: tuple[str, ...] = ()
+        elif isinstance(opcionais_raw, list):
+            for opt in opcionais_raw:
+                _validar_nome(str(opt), f"{onde}, opcional")
+            if len(opcionais_raw) != len(set(opcionais_raw)):
+                raise ValueError(f"{onde}: 'opcionais' possui itens duplicados")
+            opcionais_tuple = tuple(str(o) for o in opcionais_raw)
+        else:
+            raise ValueError(f"{onde}: 'opcionais' deve ser uma lista")
+
+        intersecao = set(entradas) & set(opcionais_tuple)
+        if intersecao:
+            nomes_inter = ", ".join(sorted(intersecao))
+            raise ValueError(
+                f"{onde}: variável '{nomes_inter}' não pode estar em 'entradas' e 'opcionais' simultaneamente"
+            )
 
         todas_vars[nome] = Variavel(
             nome=nome,
@@ -346,17 +399,9 @@ def carregar_base(pasta: Path = PASTA_CONHECIMENTO) -> Base:
             unidade=str(unidade) if unidade else None,
             formula=str(formula),
             entradas=tuple(str(e) for e in entradas),
+            opcionais=opcionais_tuple,
             fonte=str(v.get("fonte", "")),
         )
-
-    # Validar se as entradas das calculadas existem (perguntas, externas ou outras calculadas)
-    for v in todas_vars.values():
-        if v.grupo == "calculadas":
-            for e in v.entradas:
-                if e not in todas_vars:
-                    raise ValueError(
-                        f"variaveis.yaml, calculadas '{v.nome}': entrada '{e}' não declarada"
-                    )
 
     # 6. Variáveis de conclusão
     for i, v in enumerate(conclusoes_raw):
@@ -410,6 +455,32 @@ def carregar_base(pasta: Path = PASTA_CONHECIMENTO) -> Base:
             valores=valores_tuple,
             fonte=str(v.get("fonte", "")),
         )
+
+    # Validar se as entradas e opcionais das calculadas existem e não são conclusões, e se não há ciclos
+    calculadas_dict: dict[str, Variavel] = {
+        k: v for k, v in todas_vars.items() if v.grupo == "calculadas"
+    }
+    for cv in calculadas_dict.values():
+        for e in cv.entradas:
+            if e not in todas_vars:
+                raise ValueError(
+                    f"variaveis.yaml, calculadas '{cv.nome}': entrada '{e}' não declarada"
+                )
+            if todas_vars[e].grupo == "conclusoes":
+                raise ValueError(
+                    f"variaveis.yaml, calculadas '{cv.nome}': entrada '{e}' não pode ser do grupo 'conclusoes'"
+                )
+        for opt in cv.opcionais:
+            if opt not in todas_vars:
+                raise ValueError(
+                    f"variaveis.yaml, calculadas '{cv.nome}': opcional '{opt}' não declarada"
+                )
+            if todas_vars[opt].grupo == "conclusoes":
+                raise ValueError(
+                    f"variaveis.yaml, calculadas '{cv.nome}': opcional '{opt}' não pode ser do grupo 'conclusoes'"
+                )
+
+    _detectar_ciclo_calculadas(calculadas_dict)
 
     # 7. Regras de produção
     regras_lista: list[Regra] = []
