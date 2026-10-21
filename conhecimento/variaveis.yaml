@@ -1,8 +1,180 @@
 # Variáveis que não são perguntas: calculadas, externas e conclusões.
-# Formato completo e documentação em docs/contratos.md.
+# Formato completo e documentação em docs/contratos.md e docs/dominio.md.
 versao: "0.1"
 
-calculadas: []
+calculadas:
+  # Faturamento
+  - nome: receita_leite
+    descricao: Faturamento obtido exclusivamente com a venda de leite no mês
+    tipo: numero
+    unidade: R$
+    formula: producao_litros * preco_leite_fazenda
+    entradas: [producao_litros, preco_leite_fazenda]
+    fonte: "Fórmula padrão de faturamento"
+
+  - nome: receita_total
+    descricao: Receita bruta total da atividade no mês (leite somado a outras receitas)
+    tipo: numero
+    unidade: R$
+    formula: receita_leite + outras_receitas
+    entradas: [producao_litros, preco_leite_fazenda]
+    fonte: "Fórmula de receita total"
+
+  # Custos operacionais
+  - nome: custo_alimentar
+    descricao: Gasto total com alimentação do rebanho no mês (concentrado + volumoso + mineral)
+    tipo: numero
+    unidade: R$
+    formula: custo_concentrado + custo_volumoso + custo_mineral
+    entradas: [custo_concentrado, custo_volumoso]
+    fonte: "Embrapa Gado de Leite"
+
+  - nome: coe
+    descricao: Custo Operacional Efetivo (total de desembolsos diretos no mês)
+    tipo: numero
+    unidade: R$
+    formula: custo_concentrado + custo_volumoso + custo_mineral + custo_mao_obra_contratada + custo_sanidade_reproducao + custo_energia_combustivel + custo_outros
+    entradas: [custo_concentrado, custo_volumoso, custo_mao_obra_contratada]
+    fonte: "Matsunaga et al. (1976)"
+
+  - nome: cot
+    descricao: Custo Operacional Total (COE somado à depreciação e pró-labore da família)
+    tipo: numero
+    unidade: R$
+    formula: coe + depreciacao + pro_labore
+    entradas: [coe, depreciacao, pro_labore]
+    fonte: "Matsunaga et al. (1976)"
+
+  - nome: remuneracao_capital
+    descricao: Custo de oportunidade do capital investido (0,5% a.m. ou 6% a.a.)
+    tipo: numero
+    unidade: R$
+    formula: capital_investido * 0.005
+    entradas: [capital_investido]
+    fonte: PENDENTE
+
+  - nome: ct
+    descricao: Custo Total (COT somado à remuneração do capital investido)
+    tipo: numero
+    unidade: R$
+    formula: cot + remuneracao_capital
+    entradas: [cot, remuneracao_capital]
+    fonte: "Matsunaga et al. (1976)"
+
+  # Custos unitários por litro
+  - nome: coe_por_litro
+    descricao: Custo Operacional Efetivo por litro de leite produzido no mês
+    tipo: numero
+    unidade: R$/L
+    formula: coe / producao_litros
+    entradas: [coe, producao_litros]
+    fonte: "Matsunaga et al. (1976)"
+
+  - nome: cot_por_litro
+    descricao: Custo Operacional Total por litro de leite produzido no mês
+    tipo: numero
+    unidade: R$/L
+    formula: cot / producao_litros
+    entradas: [cot, producao_litros]
+    fonte: "Matsunaga et al. (1976)"
+
+  - nome: ct_por_litro
+    descricao: Custo Total por litro de leite produzido no mês
+    tipo: numero
+    unidade: R$/L
+    formula: ct / producao_litros
+    entradas: [ct, producao_litros]
+    fonte: "Matsunaga et al. (1976)"
+
+  # Margens e Resultado
+  - nome: margem_bruta
+    descricao: Margem bruta mensal da atividade (Receita Total - COE)
+    tipo: numero
+    unidade: R$
+    formula: receita_total - coe
+    entradas: [receita_total, coe]
+    fonte: "Matsunaga et al. (1976)"
+
+  - nome: margem_liquida
+    descricao: Margem líquida mensal da atividade (Receita Total - COT)
+    tipo: numero
+    unidade: R$
+    formula: receita_total - cot
+    entradas: [receita_total, cot]
+    fonte: "Matsunaga et al. (1976)"
+
+  - nome: lucro
+    descricao: Lucro ou resultado econômico mensal (Receita Total - CT)
+    tipo: numero
+    unidade: R$
+    formula: receita_total - ct
+    entradas: [receita_total, ct]
+    fonte: "Matsunaga et al. (1976)"
+
+  # Indicadores Zootécnicos e de Eficiência
+  - nome: pct_vacas_lactacao
+    descricao: Porcentagem de vacas do rebanho em lactação no mês
+    tipo: numero
+    unidade: "%"
+    formula: (vacas_lactacao / (vacas_lactacao + vacas_secas)) * 100
+    entradas: [vacas_lactacao, vacas_secas]
+    fonte: "Embrapa Gado de Leite"
+
+  - nome: litros_vaca_dia
+    descricao: Produtividade média diária por vaca em lactação (L/vaca/dia)
+    tipo: numero
+    unidade: L/dia
+    formula: producao_litros / (vacas_lactacao * 30)
+    entradas: [producao_litros, vacas_lactacao]
+    fonte: "Embrapa Gado de Leite"
+
+  - nome: pct_alimentacao_coe
+    descricao: Participação dos custos de alimentação no Custo Operacional Efetivo
+    tipo: numero
+    unidade: "%"
+    formula: (custo_alimentar / coe) * 100
+    entradas: [custo_alimentar, coe]
+    fonte: "Embrapa Gado de Leite"
+
+  - nome: pct_concentrado_receita
+    descricao: Porcentagem da receita bruta absorvida pela compra de concentrado
+    tipo: numero
+    unidade: "%"
+    formula: (custo_concentrado / receita_total) * 100
+    entradas: [custo_concentrado, receita_total]
+    fonte: "Embrapa Gado de Leite"
+
+  - nome: litros_ha
+    descricao: Produtividade mensal por área de terra (litros por hectare)
+    tipo: numero
+    unidade: L/ha
+    formula: producao_litros / area_ha
+    entradas: [producao_litros, area_ha]
+    fonte: "Embrapa Gado de Leite"
+
+  - nome: litros_dia_homem
+    descricao: Produtividade diária por trabalhador envolvido na ordenha e manejo
+    tipo: numero
+    unidade: L/dia-homem
+    formula: (producao_litros / 30) / pessoas
+    entradas: [producao_litros, pessoas]
+    fonte: "Embrapa Gado de Leite"
+
+  - nome: preco_concentrado_kg
+    descricao: Preço médio pago por quilograma de concentrado
+    tipo: numero
+    unidade: R$/kg
+    formula: custo_concentrado / concentrado_kg
+    entradas: [custo_concentrado, concentrado_kg]
+    fonte: "Fórmula de preço médio"
+
+  - nome: preco_leite_relativo_uf
+    descricao: Razão entre o preço da fazenda e o preço médio da UF (fazenda / UF)
+    tipo: numero
+    unidade: razão
+    formula: preco_leite_fazenda / preco_leite_uf
+    entradas: [preco_leite_fazenda, preco_leite_uf]
+    fonte: "Cálculo relativo para regras de mercado"
 
 externas:
   - nome: preco_leite_uf
@@ -41,4 +213,72 @@ externas:
     unidade: kg/L
     fonte: "CONAB, Preços Agropecuários Mensais por UF (PrecosMensalUF.txt)"
 
-conclusoes: []
+conclusoes:
+  - nome: situacao_economica
+    descricao: Em que faixa econômica a fazenda se enquadra segundo Matsunaga et al. (1976)
+    camada: situacao
+    tipo: categoria
+    unico: true
+    valores: [lucro, medio_prazo, curto_prazo, prejuizo]
+
+  - nome: preco_leite
+    descricao: Comparativo do preço do leite recebido pela fazenda contra o mercado estadual da CONAB
+    camada: indicador
+    tipo: categoria
+    unico: true
+    valores: [abaixo_mercado, no_mercado, acima_mercado]
+
+  - nome: custo_alimentar_nivel
+    descricao: Avaliação do peso dos custos com alimentação sobre o COE
+    camada: indicador
+    tipo: categoria
+    unico: true
+    valores: [alto, adequado]
+
+  - nome: lactacao_nivel
+    descricao: Eficiência reprodutiva avaliada pela porcentagem de vacas em lactação
+    camada: indicador
+    tipo: categoria
+    unico: true
+    valores: [baixa, adequada]
+
+  - nome: produtividade_nivel
+    descricao: Avaliação da produtividade média por vaca em lactação (L/vaca/dia)
+    camada: indicador
+    tipo: categoria
+    unico: true
+    valores: [baixa, adequada, alta]
+
+  - nome: troca_leite_milho_nivel
+    descricao: Situação do poder de compra de insumos medido pela relação de troca leite:milho
+    camada: indicador
+    tipo: categoria
+    unico: true
+    valores: [desfavoravel, favoravel]
+
+  - nome: qualidade_leite
+    descricao: Conformidade do leite cru quanto aos limites legais de CCS e CPP da IN 76/2018
+    camada: indicador
+    tipo: categoria
+    unico: true
+    valores: [fora_in76, dentro_in76]
+
+  - nome: causa
+    descricao: Causas prováveis diagnosticadas para a situação econômica da fazenda
+    camada: causa
+    tipo: categoria
+    unico: false
+    valores: [preco_recebido_baixo, custo_alimentar_alto, rebanho_reproducao, qualidade_leite, escala_baixa]
+
+  - nome: recomendacao
+    descricao: Recomendações técnicas, nutricionais e gerenciais formuladas pelo sistema
+    camada: recomendacao
+    tipo: categoria
+    unico: false
+    valores:
+      - negociar_com_laticinio
+      - revisar_dieta_com_nutricionista
+      - manejo_reprodutivo
+      - melhorar_higiene_ordenha
+      - avaliar_escala
+      - manter_controle_e_avaliar_expansao

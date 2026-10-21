@@ -1,5 +1,239 @@
 # Perguntas ao usuário (variáveis de entrada coletadas no formulário).
-# Formato completo e documentação em docs/contratos.md.
+# Formato completo e documentação em docs/contratos.md e docs/dominio.md.
 versao: "0.1"
-secoes: []
-perguntas: []
+
+secoes:
+  - id: identificacao
+    titulo: Identificação da Propriedade
+  - id: rebanho
+    titulo: Rebanho e Produtividade
+  - id: receitas
+    titulo: Faturamento e Receitas
+  - id: custos
+    titulo: Custos Operacionais Desembolsados (COE)
+  - id: capital
+    titulo: Custos Não Desembolsados e Capital
+  - id: opcionais
+    titulo: Informações Complementares e Qualidade
+
+perguntas:
+  # 1. Identificação
+  - id: uf
+    secao: identificacao
+    texto: Em que Estado (UF) fica a fazenda?
+    ajuda: Utilizado para comparar os preços da fazenda com as cotações oficiais da CONAB.
+    tipo: escolha
+    opcoes: [AC, AL, AP, AM, BA, CE, DF, ES, GO, MA, MT, MS, MG, PA, PB, PR, PE, PI, RJ, RN, RS, RO, RR, SC, SP, SE, TO]
+    obrigatoria: true
+
+  - id: mes_referencia
+    secao: identificacao
+    texto: Qual o mês de referência dos dados?
+    ajuda: "Mês e ano a que se referem os custos e a produção informados (ex.: 09/2026)."
+    tipo: mes
+    obrigatoria: true
+
+  # 2. Rebanho
+  - id: vacas_lactacao
+    secao: rebanho
+    texto: Quantas vacas estavam em lactação no mês?
+    ajuda: Número médio de vacas ordenhadas no mês de referência.
+    tipo: inteiro
+    unidade: cabeças
+    faixa: [1, 5000]
+    fonte_faixa: PENDENTE
+    obrigatoria: true
+
+  - id: vacas_secas
+    secao: rebanho
+    texto: Quantas vacas secas a propriedade possui?
+    ajuda: Vacas que não estão sendo ordenhadas no momento (período de descanso pré-parto).
+    tipo: inteiro
+    unidade: cabeças
+    faixa: [0, 5000]
+    fonte_faixa: PENDENTE
+    obrigatoria: true
+
+  # 3. Receitas
+  - id: producao_litros
+    secao: receitas
+    texto: Qual foi a produção total de leite no mês?
+    ajuda: Volume total em litros entregue ao laticínio ou comercializado no mês.
+    tipo: numero
+    unidade: L/mês
+    faixa: [50.0, 2000000.0]
+    fonte_faixa: PENDENTE
+    obrigatoria: true
+
+  - id: preco_leite_fazenda
+    secao: receitas
+    texto: Qual foi o preço líquido médio recebido por litro de leite?
+    ajuda: Valor líquido em R$/L creditado na conta após descontos do laticínio.
+    tipo: numero
+    unidade: R$/L
+    faixa: [0.5, 20.0]
+    fonte_faixa: "Observado na CONAB"
+    obrigatoria: true
+
+  - id: outras_receitas
+    secao: receitas
+    texto: Houve outras receitas na atividade leiteira no mês?
+    ajuda: Venda de animais de descarte (vacas/bezerros), esterco ou outros subprodutos da atividade.
+    tipo: numero
+    unidade: R$/mês
+    faixa: [0.0, 500000.0]
+    fonte_faixa: PENDENTE
+    obrigatoria: false
+
+  # 4. Custos Desembolsados (COE)
+  - id: custo_concentrado
+    secao: custos
+    texto: Qual foi o gasto total com ração concentrada no mês?
+    ajuda: Ração comercial balanceada, farelo de soja, milho em grão ou fubá, farelo de trigo, etc.
+    tipo: numero
+    unidade: R$/mês
+    faixa: [0.0, 1000000.0]
+    fonte_faixa: PENDENTE
+    obrigatoria: true
+
+  - id: concentrado_kg
+    secao: custos
+    texto: Quantos kg de concentrado foram fornecidos no mês?
+    ajuda: Peso total de concentrado consumido (permite calcular o custo médio por kg).
+    tipo: numero
+    unidade: kg/mês
+    faixa: [0.0, 500000.0]
+    fonte_faixa: PENDENTE
+    obrigatoria: false
+
+  - id: custo_volumoso
+    secao: custos
+    texto: Qual foi o custo com volumoso suplementar no mês?
+    ajuda: Silagem de milho/sorgo, capineira picada, feno, cana-de-açúcar ou adubação direta de pastagens anuais.
+    tipo: numero
+    unidade: R$/mês
+    faixa: [0.0, 500000.0]
+    fonte_faixa: PENDENTE
+    obrigatoria: true
+
+  - id: custo_mineral
+    secao: custos
+    texto: Quanto foi gasto com sal mineral e suplementos?
+    ajuda: Sal mineralizado, sal branco, premix e tamponantes utilizados na nutrição.
+    tipo: numero
+    unidade: R$/mês
+    faixa: [0.0, 100000.0]
+    fonte_faixa: PENDENTE
+    obrigatoria: false
+
+  - id: custo_mao_obra_contratada
+    secao: custos
+    texto: Qual o gasto com mão de obra contratada no mês?
+    ajuda: Salários, encargos, diárias e alimentação de funcionários contratados.
+    tipo: numero
+    unidade: R$/mês
+    faixa: [0.0, 500000.0]
+    fonte_faixa: PENDENTE
+    obrigatoria: true
+
+  - id: custo_sanidade_reproducao
+    secao: custos
+    texto: Quanto foi gasto com sanidade e reprodução?
+    ajuda: Vacinas, vermífugos, antibióticos para mastite, desinfetantes de ordenha, sêmen e hormônios.
+    tipo: numero
+    unidade: R$/mês
+    faixa: [0.0, 100000.0]
+    fonte_faixa: PENDENTE
+    obrigatoria: false
+
+  - id: custo_energia_combustivel
+    secao: custos
+    texto: Qual o gasto com energia elétrica e combustível?
+    ajuda: Conta de energia do tanque/ordenha e diesel do trator e gerador.
+    tipo: numero
+    unidade: R$/mês
+    faixa: [0.0, 100000.0]
+    fonte_faixa: PENDENTE
+    obrigatoria: false
+
+  - id: custo_outros
+    secao: custos
+    texto: Outros custos operacionais desembolsados no mês?
+    ajuda: Frete do leite, manutenção rotineira de benfeitorias, assistência técnica e despesas administrativas.
+    tipo: numero
+    unidade: R$/mês
+    faixa: [0.0, 200000.0]
+    fonte_faixa: PENDENTE
+    obrigatoria: false
+
+  # 5. Custos Não Desembolsados e Capital (COT e CT)
+  - id: depreciacao
+    secao: capital
+    texto: Qual o valor mensal estimado de depreciação?
+    ajuda: Reserva contábil para reposição futura de tratores, ordenhadeira, tanque, cerca e instalações.
+    tipo: numero
+    unidade: R$/mês
+    faixa: [0.0, 200000.0]
+    fonte_faixa: PENDENTE
+    obrigatoria: true
+
+  - id: pro_labore
+    secao: capital
+    texto: Qual o pró-labore ou valor da mão de obra familiar no mês?
+    ajuda: Valor atribuído ao trabalho gerencial e operacional do produtor e familiares na fazenda.
+    tipo: numero
+    unidade: R$/mês
+    faixa: [0.0, 100000.0]
+    fonte_faixa: PENDENTE
+    obrigatoria: true
+
+  - id: capital_investido
+    secao: capital
+    texto: Qual o valor total estimado do capital investido na atividade?
+    ajuda: Valor estimado de mercado de vacas, máquinas, equipamentos e instalações da pecuária leiteira.
+    tipo: numero
+    unidade: R$
+    faixa: [0.0, 50000000.0]
+    fonte_faixa: PENDENTE
+    obrigatoria: false
+
+  # 6. Complementares e Qualidade
+  - id: area_ha
+    secao: opcionais
+    texto: Qual a área total destinada à atividade leiteira (hectares)?
+    ajuda: Pastagens, capineiras e áreas de silagem dedicadas ao gado de leite.
+    tipo: numero
+    unidade: ha
+    faixa: [0.1, 10000.0]
+    fonte_faixa: PENDENTE
+    obrigatoria: false
+
+  - id: pessoas
+    secao: opcionais
+    texto: Quantas pessoas trabalham diretamente na atividade leiteira?
+    ajuda: Soma de empregados fixos e membros da família atuando na ordenha e manejo.
+    tipo: numero
+    unidade: pessoas
+    faixa: [1.0, 100.0]
+    fonte_faixa: PENDENTE
+    obrigatoria: false
+
+  - id: ccs
+    secao: opcionais
+    texto: Qual a Contagem de Células Somáticas (CCS) do leite no mês?
+    ajuda: "Em mil células/mL (ex.: 350 para 350.000 CS/mL). Limite da IN 76/2018 é 500 mil CS/mL."
+    tipo: numero
+    unidade: mil CS/mL
+    faixa: [10.0, 3000.0]
+    fonte_faixa: "IN 76/2018"
+    obrigatoria: false
+
+  - id: cpp
+    secao: opcionais
+    texto: Qual a Contagem Padrão em Placas (CPP) do leite no mês?
+    ajuda: "Em mil UFC/mL (ex.: 80 para 80.000 UFC/mL). Limite da IN 76/2018 é 300 mil UFC/mL."
+    tipo: numero
+    unidade: mil UFC/mL
+    faixa: [1.0, 3000.0]
+    fonte_faixa: "IN 76/2018"
+    obrigatoria: false
