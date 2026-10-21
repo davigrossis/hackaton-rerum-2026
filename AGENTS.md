@@ -48,7 +48,7 @@ dados/
   casos/               #   fazendas-exemplo: demo e testes de casos conhecidos
   rascunho_catalogo.py #   imprime rascunho de produto da CONAB para o mercado.yaml
 tests/                 # pytest; o que cada arquivo testa: tests/README.md
-docs/                  # arquitetura, catálogo de regras, processo com IA, apresentação
+docs/                  # guia do sistema especialista, arquitetura, catálogo de regras, processo com IA, apresentação
 ```
 
 ## Comandos
