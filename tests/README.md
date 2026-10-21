@@ -12,12 +12,20 @@ pytest tests/test_catalogo_mercado.py -v   # catálogo da CONAB, com um caso por
 | Arquivo | O que testa | Pergunta que responde |
 |---|---|---|
 | `test_esqueleto.py` | o projeto de pé: a base de conhecimento carrega, o app abre e o `CLAUDE.md` só importa o `AGENTS.md` | "O projeto roda?" |
+| `test_contratos.py` | contratos da base de conhecimento, validações de carga, memória de trabalho e APIs do motor | "Os contratos e regras estão consistentes?" |
 | `test_mercado.py` | **a saída**: o que `fatos_mercado` devolve | "O sistema calcula os fatos certos?" |
 | `test_catalogo_mercado.py` | **a entrada**: o catálogo `conhecimento/mercado.yaml` e o script de rascunho | "O sistema está lendo os produtos certos da base?" |
 
 Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - **id trocado no catálogo** (4744, soja, no lugar de 4742, milho): só o `test_catalogo_mercado.py` pega;
 - **erro de cálculo** (janela de 12 meses, troca leite:milho, último preço do insumo): o catálogo continua certo, e só o `test_mercado.py` pega.
+
+### `test_contratos.py`
+- Valida o carregamento da base real e da base fixture de exemplo (`tests/fixtures/base_exemplo/`);
+- Confere se as variáveis externas batem com o que `fatos_mercado` devolve em nomes e unidades;
+- Testa 21 casos de preenchimento incorreto de regras, perguntas e variáveis, garantindo mensagens de erro claras;
+- Testa operações da memória de trabalho (adição, combinação de CF, valor único vs multivalorado, cópia independente);
+- Testa `perguntas_pendentes` v0 e integridade do motor (não importa domínio, interface ou Streamlit).
 
 ### `test_mercado.py`
 - `fatos_mercado("MG")` funciona sem internet, e cada fato traz fonte e período (critérios de aceite da issue #4);

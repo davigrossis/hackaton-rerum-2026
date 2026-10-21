@@ -38,6 +38,7 @@ motor/                 # motor GENÉRICO: não conhece leite nem economia
 conhecimento/          # BASE DE CONHECIMENTO, explícita e versionada
   regras.yaml          #   regras de produção
   perguntas.yaml       #   perguntas, unidades, faixas válidas, texto de ajuda
+  variaveis.yaml       #   variáveis calculadas, externas e conclusões com camada e único
   mercado.yaml         #   produtos da CONAB: id, nome na base, unidade, faixa plausível
 dominio/               # código específico do T3
   indicadores.py       #   fórmulas: COE, COT, CT, custo/L, margens, % lactação...
@@ -48,7 +49,7 @@ dados/
   casos/               #   fazendas-exemplo: demo e testes de casos conhecidos
   rascunho_catalogo.py #   imprime rascunho de produto da CONAB para o mercado.yaml
 tests/                 # pytest; o que cada arquivo testa: tests/README.md
-docs/                  # guia do sistema especialista, arquitetura, catálogo de regras, processo com IA, apresentação
+docs/                  # guia do SE, contratos (docs/contratos.md), arquitetura, regras, processo com IA
 ```
 
 ## Comandos
@@ -84,6 +85,9 @@ regras:
 - Um fato pode ter vários valores (ex.: várias causas). `==` é verdadeiro se algum valor bate.
 - CF da conclusão = `cf da regra × menor CF das premissas`. Premissa com CF < 0,2 conta como falsa. Se duas regras chegam à mesma conclusão: `cf1 + cf2 × (1 − cf1)`.
 - Conflito: maior `prioridade` → mais condições → ordem no arquivo. Cada regra dispara no máximo uma vez.
+- Contrato completo de dados, APIs e formatos YAML em `docs/contratos.md`.
+- Resolução de conflito estratificada por camada: `indicador` → `situacao` → `causa` → `recomendacao` (D3).
+- `$nome` só referencia fato com `unico: true` (D5). Premissa com CF < 0,2 conta como falsa.
 - Toda regra precisa de `id` único, `descricao`, `fonte` e de ao menos um caso de teste que a exercite.
 - Produtos da CONAB ficam em `conhecimento/mercado.yaml`, não no código. Para incluir um: `python -m dados.rascunho_catalogo <nome ou id>`, cole a entrada no YAML e preencha os campos `PREENCHER`. Os testes do produto são gerados sozinhos.
 
