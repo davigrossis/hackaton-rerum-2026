@@ -14,6 +14,29 @@ Cada dev registra o prompt que usou para pedir à IA a explicação de sistema e
 | B | | |
 | C | | |
 
+## Arquitetura
+
+```mermaid
+flowchart LR
+    KA["<b>Aquisição de conhecimento</b><br/>especialista + engenheiro"]
+    KB["<b>Base de conhecimento</b><br/>regras, variáveis, pesos (CF)<br/>versionada e revisada"]
+    IE["<b>Motor de inferência</b><br/>casa regras com fatos,<br/>resolve conflito, dispara"]
+    WM["<b>Memória de trabalho</b><br/>fatos da sessão atual<br/>respostas + conclusões"]
+    EXT["<b>Fontes de dados externas</b><br/>prontuário, sensores, APIs"]
+    UI["<b>Interface do usuário</b><br/>exibe perguntas, coleta respostas<br/>e apresenta o parecer final"]
+    EXP["<b>Módulo de explicação</b><br/>responde por quê? e como?<br/>a partir do traço de inferência"]
+
+    KA -->|edita| KB
+    KB -->|regras| IE
+    IE <-->|fatos| WM
+    EXT -->|alimenta| WM
+    UI <-->|perguntas / respostas| IE
+    IE -->|traço de regras| EXP
+
+    classDef core fill:#e6f4fa,stroke:#29a3c9,stroke-width:2px
+    class IE core
+```
+
 ## Diário de decisões
 | Data | Pedido à IA | Decisão | O que a IA errou ou a equipe ajustou |
 |---|---|---|---|
