@@ -23,6 +23,11 @@ def _ir_para(etapa: int) -> None:
     st.session_state[fm.CHAVE_RESULTADO] = None
 
 
+def _ir_para_com_navegacao(etapa: int) -> None:
+    st.session_state[fm.CHAVE_NAVEGACAO] = etapa
+    _ir_para(etapa)
+
+
 def _gerar(respostas: dict) -> None:
     st.session_state[fm.CHAVE_RESULTADO] = respostas
 
@@ -47,15 +52,16 @@ def _barra_lateral(secoes: list[fm.SecaoComPerguntas], ids: set[str]) -> None:
 def _navegacao(atual: int, ultima: int) -> None:
     voltar, _, avancar = st.columns([1, 3, 1])
     if atual > 0:
-        voltar.button("Voltar", on_click=_ir_para, args=(atual - 1,))
+        voltar.button("Voltar", on_click=_ir_para_com_navegacao, args=(atual - 1,))
     if atual < ultima:
         avancar.button(
-            "Avançar", type="primary", on_click=_ir_para, args=(atual + 1,)
+            "Avançar", type="primary",
+            on_click=_ir_para_com_navegacao, args=(atual + 1,),
         )
 
 
 def main() -> None:
-    st.set_page_config(page_title="EconoLeite", page_icon="🥛", layout="wide")
+    st.set_page_config(page_title="Datalac", page_icon="📊", layout="wide")
     aplicar_estilo()
     fm.iniciar_estado()
     cabecalho()
@@ -65,19 +71,31 @@ def main() -> None:
     secoes = [(s, [p for p in perguntas if p.secao == s.id]) for s in base.secoes]
     secoes = [(s, ps) for s, ps in secoes if ps]
     ids = {p.id for p in perguntas}
+    fm.sincronizar_respostas(perguntas)
     _barra_lateral(secoes, ids)
 
     if st.session_state[fm.CHAVE_RESULTADO] is not None:
         renderizar_mock(st.session_state[fm.CHAVE_RESULTADO])
-        st.button("Editar respostas", on_click=_ir_para, args=(len(secoes),))
+        st.button(
+            "Editar respostas",
+            on_click=_ir_para_com_navegacao,
+            args=(len(secoes),),
+        )
         return
 
     revisao = len(secoes)
     atual = min(st.session_state[fm.CHAVE_ETAPA], revisao)
+    alcancada = max(st.session_state[fm.CHAVE_ALCANCADA], atual)
+    st.session_state[fm.CHAVE_ALCANCADA] = alcancada
+
     respostas = fm.coletar_respostas()
     titulos = [s.titulo for s, _ in secoes] + ["Revisão"]
-    estados = fm.estados_das_etapas(secoes, respostas, atual) + [""]
-    etapas(titulos, atual, estados)
+    estados = fm.estados_das_etapas(secoes, respostas, alcancada) + [""]
+
+    escolhida = etapas(titulos, atual, estados)
+    if escolhida is not None and escolhida != atual:
+        _ir_para(escolhida)
+        st.rerun()
 
     if atual < revisao:
         secao, perguntas_secao = secoes[atual]

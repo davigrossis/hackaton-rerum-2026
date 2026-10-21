@@ -14,6 +14,8 @@ CHAVE_DADOS = "dados"
 CHAVE_ETAPA = "etapa"
 CHAVE_RESULTADO = "resultado"
 PREFIXO_CAMPO = "resposta_"
+CHAVE_ALCANCADA = "etapa_alcancada"
+CHAVE_NAVEGACAO = "navegacao_etapas"
 PADRAO_MES = re.compile(r"^(0[1-9]|1[0-2])/\d{4}$")
 
 SecaoComPerguntas = tuple[Secao, list[Pergunta]]
@@ -22,6 +24,8 @@ SecaoComPerguntas = tuple[Secao, list[Pergunta]]
 def iniciar_estado() -> None:
     st.session_state.setdefault(CHAVE_DADOS, {})
     st.session_state.setdefault(CHAVE_ETAPA, 0)
+    st.session_state.setdefault(CHAVE_ALCANCADA, 0)
+    st.session_state.setdefault(CHAVE_NAVEGACAO, 0)
     st.session_state.setdefault(CHAVE_RESULTADO, None)
 
 
@@ -41,6 +45,8 @@ def carregar_exemplo(ids_validos: set[str]) -> None:
         k: v for k, v in FAZENDA_EXEMPLO.items() if k in ids_validos
     }
     st.session_state[CHAVE_ETAPA] = 0
+    st.session_state[CHAVE_ALCANCADA] = 0
+    st.session_state[CHAVE_NAVEGACAO] = 0
     st.session_state[CHAVE_RESULTADO] = None
 
 
@@ -48,6 +54,8 @@ def limpar_respostas() -> None:
     _limpar_widgets()
     st.session_state[CHAVE_DADOS] = {}
     st.session_state[CHAVE_ETAPA] = 0
+    st.session_state[CHAVE_ALCANCADA] = 0
+    st.session_state[CHAVE_NAVEGACAO] = 0
     st.session_state[CHAVE_RESULTADO] = None
 
 
@@ -138,16 +146,18 @@ def problemas(
 
 
 def estados_das_etapas(
-    secoes: list[SecaoComPerguntas], respostas: dict[str, Any], atual: int
+    secoes: list[SecaoComPerguntas], respostas: dict[str, Any], alcancada: int
 ) -> list[str]:
-    """'ok' / 'alerta' para etapas já visitadas; '' para as que ainda não."""
+    """'' (ainda não visitada), 'ok' ou 'alerta' (visitada com pendência)."""
     ruins = {i for i, _ in problemas(secoes, respostas)}
     estados = []
     for i in range(len(secoes)):
-        if i >= atual:
+        if i > alcancada:
             estados.append("")
+        elif i in ruins:
+            estados.append("alerta")
         else:
-            estados.append("alerta" if i in ruins else "ok")
+            estados.append("ok")
     return estados
 
 
@@ -157,3 +167,23 @@ def progresso_obrigatorias(
     obrigatorias = [p for _, ps in secoes for p in ps if p.obrigatoria]
     feitas = sum(1 for p in obrigatorias if p.id in respostas)
     return feitas, len(obrigatorias)
+
+
+def sincronizar_respostas(perguntas: list[Pergunta]) -> None:
+    """Copia para o dict os valores dos widgets ainda presentes no estado.
+
+    Roda no início de cada execução, antes de trocar de etapa, para que o
+    que foi digitado em uma seção não se perca ao navegar.
+    """
+    dados = st.session_state[CHAVE_DADOS]
+    for pergunta in perguntas:
+        chave = _chave(pergunta)
+        if chave not in st.session_state:
+            continue
+        valor = st.session_state[chave]
+        if isinstance(valor, str):
+            valor = valor.strip()
+        if valor is None or valor == "":
+            dados.pop(pergunta.id, None)
+        else:
+            dados[pergunta.id] = valor

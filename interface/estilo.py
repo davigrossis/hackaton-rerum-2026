@@ -5,7 +5,7 @@ from __future__ import annotations
 import streamlit as st
 
 VERDE = "#2e6b4a"
-FENO = "#b7791f"
+FENO = "#8f7a2e"
 
 CSS = f"""
 <style>
@@ -29,11 +29,16 @@ CSS = f"""
 .el-etapa.ok {{ border-color: {VERDE}; color: {VERDE}; opacity: 1; }}
 .el-etapa.alerta {{ border-color: {FENO}; color: {FENO}; opacity: 1; }}
 .el-mock {{
-    display: inline-block; background: #fff3cd; color: #7a5b00;
+    display: inline-block; background: #f3e7b0; color: #5c4a00;
+    border: 1px solid {FENO};
     padding: .15rem .65rem; border-radius: 6px;
     font-weight: 700; font-size: .78rem;
 }}
 .el-situacao {{ font-size: 2.2rem; font-weight: 700; margin: .3rem 0; }}
+[data-testid="stPills"] button[aria-label^="! "] {{
+    border-color: {FENO};
+    color: {FENO};
+}}
 </style>
 """
 
@@ -45,21 +50,26 @@ def aplicar_estilo() -> None:
 def cabecalho() -> None:
     st.markdown(
         '<div class="el-topo">'
-        '<div class="el-titulo">🥛 EconoLeite</div>'
+        '<div class="el-titulo">📊 Datalac</div>'
         '<div class="el-sub">Descubra se a sua atividade leiteira está pagando '
         "os custos. Informe os dados de um mês e receba um parecer explicado."
         "</div></div>",
         unsafe_allow_html=True,
     )
 
+def etapas(titulos: list[str], atual: int, estados: list[str]) -> int | None:
+    """Trilha clicável. Devolve o índice escolhido (ou None se desmarcou)."""
 
-def etapas(titulos: list[str], atual: int, estados: list[str]) -> None:
-    """Desenha a trilha de etapas. estados: 'ok', 'alerta' ou '' por etapa."""
-    pilulas = []
-    for i, titulo in enumerate(titulos):
-        classe = "atual" if i == atual else estados[i]
-        marca = {"ok": "✓ ", "alerta": "! "}.get(estados[i], "") if i != atual else ""
-        pilulas.append(f'<span class="el-etapa {classe}">{marca}{titulo}</span>')
-    st.markdown(
-        f'<div class="el-etapas">{"".join(pilulas)}</div>', unsafe_allow_html=True
-    )
+    def rotulo(i: int) -> str:
+        marca = {"ok": "✓ ", "alerta": "! "}.get(estados[i], "")
+        return f"{marca}{titulos[i]}"
+
+    opcoes: dict[str, object] = {
+        "format_func": rotulo,
+        "selection_mode": "single",
+        "key": "navegacao_etapas",
+        "label_visibility": "collapsed",
+    }
+    if "navegacao_etapas" not in st.session_state:
+        opcoes["default"] = atual
+    return st.pills("Etapas", list(range(len(titulos))), **opcoes)
