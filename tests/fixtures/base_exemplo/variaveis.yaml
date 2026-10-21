@@ -1,0 +1,62 @@
+versao: "0.1"
+
+calculadas:
+  - nome: receita_total
+    descricao: Receita bruta da venda de leite no mês
+    tipo: numero
+    unidade: R$
+    formula: producao_litros * preco_leite_fazenda
+    entradas: [producao_litros, preco_leite_fazenda]
+    fonte: "Fórmula padrão de faturamento"
+
+  - nome: coe
+    descricao: Custo operacional efetivo
+    tipo: numero
+    unidade: R$
+    formula: soma dos custos desembolsados
+    entradas: [producao_litros]
+    fonte: "Matsunaga et al. (1976)"
+
+  - nome: cot
+    descricao: Custo operacional total
+    tipo: numero
+    unidade: R$
+    formula: coe + depreciacao
+    entradas: [coe]
+    fonte: "Matsunaga et al. (1976)"
+
+externas:
+  - nome: preco_leite_uf
+    descricao: Preço médio do leite recebido na UF no mês
+    tipo: numero
+    unidade: R$/L
+    fonte: "CONAB"
+
+conclusoes:
+  - nome: preco_leite
+    descricao: Comparativo do preço recebido contra a média da UF
+    camada: indicador
+    tipo: categoria
+    unico: true
+    valores: [abaixo_mercado, no_mercado, acima_mercado]
+
+  - nome: situacao_economica
+    descricao: Classificação da situação econômica segundo margens
+    camada: situacao
+    tipo: categoria
+    unico: true
+    valores: [lucro, medio_prazo, curto_prazo, prejuizo]
+
+  - nome: causa
+    descricao: Causas prováveis identificadas para o resultado da fazenda
+    camada: causa
+    tipo: categoria
+    unico: false
+    valores: [preco_recebido_baixo, custo_alimentar_alto]
+
+  - nome: recomendacao
+    descricao: Recomendações técnicas e gerenciais sugeridas
+    camada: recomendacao
+    tipo: categoria
+    unico: false
+    valores: [negociar_com_laticinio]

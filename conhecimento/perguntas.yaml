@@ -1,2 +1,5 @@
-# Perguntas ao usuário (variáveis de entrada), com unidade, faixa válida e texto de ajuda.
+# Perguntas ao usuário (variáveis de entrada coletadas no formulário).
+# Formato completo e documentação em docs/contratos.md.
+versao: "0.1"
+secoes: []
 perguntas: []
