@@ -1,0 +1,41 @@
+# Materiais do hackathon (PDFs da organização; não versionar)
+/info-hackaton/
+
+# Plano interno da equipe (não versionar)
+/plano.md
+
+# Ambiente e segredos
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Ambientes virtuais e dependências
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Caches e relatórios de ferramentas
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# Editores e sistema operacional
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Claude Code (configuração local de cada dev)
+.claude/settings.local.json
