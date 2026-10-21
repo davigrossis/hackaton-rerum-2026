@@ -126,6 +126,15 @@ def _validar_nome(nome: str, onde: str) -> None:
         )
 
 
+def _validar_camada(var: Variavel, camada: str, onde: str) -> None:
+    """D4: a premissa não lê conclusão da camada da regra nem de camada posterior."""
+    if var.grupo == "conclusoes" and CAMADAS.index(var.camada) >= CAMADAS.index(camada):
+        raise ValueError(
+            f"{onde}: regra da camada '{camada}' não pode ter premissa "
+            f"que lê fato da camada '{var.camada}'"
+        )
+
+
 def carregar_base(pasta: Path = PASTA_CONHECIMENTO) -> Base:
     """Carrega e valida a base de conhecimento a partir dos arquivos YAML."""
     pasta = Path(pasta)
@@ -406,8 +415,6 @@ def carregar_base(pasta: Path = PASTA_CONHECIMENTO) -> Base:
     regras_lista: list[Regra] = []
     ids_regras: set[str] = set()
 
-    camada_indices = {c: idx for idx, c in enumerate(CAMADAS)}
-
     for ordem, r in enumerate(regras_raw):
         onde = f"regras.yaml, regra [{ordem}]"
         if not isinstance(r, dict):
@@ -513,16 +520,7 @@ def carregar_base(pasta: Path = PASTA_CONHECIMENTO) -> Base:
                 )
 
             var_p_fato = todas_vars[p_fato]
-
-            # Estratificação D4: premissa não pode ler conclusão de camada posterior ou da mesma camada posterior
-            if var_p_fato.grupo == "conclusoes" and var_p_fato.camada is not None:
-                idx_fato_camada = camada_indices[var_p_fato.camada]
-                idx_regra_camada = camada_indices[camada]
-                if idx_fato_camada >= idx_regra_camada:
-                    raise ValueError(
-                        f"{onde_cond}: regra da camada '{camada}' não pode ter premissa "
-                        f"que lê fato da camada '{var_p_fato.camada}'"
-                    )
+            _validar_camada(var_p_fato, camada, onde_cond)
 
             # Validação do alvo
             if isinstance(p_alvo, str) and p_alvo.startswith("$"):
@@ -537,6 +535,7 @@ def carregar_base(pasta: Path = PASTA_CONHECIMENTO) -> Base:
                         f"{onde_cond}: referência '${ref_nome}' inválida: a variável "
                         f"referenciada deve ser 'unico: true'"
                     )
+                _validar_camada(ref_var, camada, onde_cond)
                 if p_op in ("<", "<=", ">", ">=") and (
                     var_p_fato.tipo != "numero" or ref_var.tipo != "numero"
                 ):

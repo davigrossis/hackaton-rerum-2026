@@ -233,6 +233,12 @@ regras:
             '- [c_sit, "==", ok]',
             "não pode ter premissa que lê fato da camada 'situacao'",
         ),
+        (
+            "regras",
+            '- [c_ind, "==", bom]',
+            '- [c_ind, "==", $c_sit]',
+            "não pode ter premissa que lê fato da camada 'situacao'",
+        ),
         ("regras", '[p_num, ">", 50]', '[p_num, "=~", 50]', "operador '=~' inválido"),
         (
             "regras",
@@ -271,6 +277,7 @@ regras:
         "valor_concluido_invalido",
         "camada_regra_diferente_id",
         "premissa_le_camada_posterior",
+        "referencia_le_camada_posterior",
         "operador_invalido",
         "referencia_a_variavel_multivalorada",
         "referencia_a_variavel_inexistente",
