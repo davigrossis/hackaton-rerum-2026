@@ -1,0 +1,40 @@
+# Produtos da CONAB que viram fatos de mercado (dados/raw/PrecosMensalUF.txt; análise em base.md).
+# A chave na base é id_produto + nivel, nunca o nome, que vem cortado.
+# produto_conab e classificacao_conab são conferidos pelos testes contra o id.
+# Valor fora da faixa é descartado: a faixa só pega erro de unidade (saca, tonelada).
+# Para incluir um produto: python -m dados.rascunho_catalogo <nome ou id>
+versao: "0.1"
+fonte: "CONAB, Preços Agropecuários Mensais por UF (PrecosMensalUF.txt)"
+produtos:
+  - nome: leite # vira o fato preco_leite_uf
+    descricao: Leite de vaca in natura, preço recebido pelo produtor
+    id_produto: "6542" # sempre entre aspas: o YAML lê 06542 como número octal
+    produto_conab: LEITE DE VACA
+    classificacao_conab: IN NATURA
+    nivel: PREÇO RECEBIDO P/ PRODUTOR
+    unidade: R$/L
+    sem_preco_no_mes: omite # sazonalidade forte: só vale o mesmo mês (base.md, armadilha 7)
+    faixa: [0.5, 20.0] # observado na base: 1,43 a 7,43
+    fonte_faixa: "VALIDADO"
+
+  - nome: milho
+    descricao: Milho em grãos, preço recebido pelo produtor de grãos; para quem compra, é um piso (base.md, armadilha 10)
+    id_produto: "4742"
+    produto_conab: MILHO
+    classificacao_conab: EM GRÃOS
+    nivel: PREÇO RECEBIDO P/ PRODUTOR
+    unidade: R$/kg
+    sem_preco_no_mes: usa_ultimo # usa o último preço anterior, com a data dele
+    faixa: [0.2, 5.0] # observado na base: 0,68 a 1,70
+    fonte_faixa: "VALIDADO"
+
+  - nome: diesel
+    descricao: Óleo diesel, preço pago pelo produtor
+    id_produto: "4422"
+    produto_conab: OLEO DIESEL
+    classificacao_conab: NÃO INFORMADO
+    nivel: PREÇO PAGO PELO PRODUTOR
+    unidade: R$/L
+    sem_preco_no_mes: usa_ultimo
+    faixa: [2.0, 25.0] # observado na base: 5,85 a 8,89
+    fonte_faixa: "VALIDADO"
