@@ -121,16 +121,16 @@ Fórmulas e referências técnicas recomendadas pela literatura especializada (E
 1. **Porcentagem de vacas em lactação:**
    - $\text{\% Lactação} = \frac{\text{Vacas em Lactação}}{\text{Vacas em Lactação} + \text{Vacas Secas}} \times 100$
    - *Referência zootécnica:* ideal entre **80% e 85%** (Embrapa).
-   - *Alerta:* abaixo de 70% aponta falhas reprodutivas graves (intervalo entre partos excessivo, atraso na inseminação ou retenção de vacas improdutivas).
+   - *Alerta:* abaixo de 70% aponta falhas reprodutivas graves (intervalo entre partos excessivo, atraso na inseminação ou retenção de vacas improdutivas) *(fonte: PENDENTE)*.
 2. **Produtividade média por vaca em lactação:**
    - $\text{Litros/vaca/dia} = \frac{\text{Produção Mensal (L)}}{\text{Vacas em Lactação} \times 30}$
-   - *Referência:* varia com o sistema (animais a pasto vs confinamento), mas produções abaixo de 10 a 12 L/vaca/dia com concentrado comercial indicam conversão alimentar ineficiente.
+   - *Referência:* varia com o sistema (animais a pasto vs confinamento), mas produções abaixo de 10 a 12 L/vaca/dia com concentrado comercial indicam conversão alimentar ineficiente *(fonte: PENDENTE)*.
 3. **Participação da alimentação no COE:**
    - $\text{\% Alimentação no COE} = \frac{\text{Custo de Concentrado} + \text{Volumoso} + \text{Mineral}}{\text{COE}} \times 100$
-   - *Referência:* faixa saudável entre **40% e 65%**. Acima de 68% a 70% indica sobrecusto alimentar ou desperdício de ração (exceto rebanhos de altíssima produtividade onde a escala compensa).
+   - *Referência:* faixa saudável entre **40% e 65%**. Acima de 68% a 70% indica sobrecusto alimentar ou desperdício de ração (exceto rebanhos de altíssima produtividade onde a escala compensa) *(fonte: PENDENTE)*.
 4. **Participação do concentrado na receita:**
    - $\text{\% Concentrado na Receita} = \frac{\text{Custo de Concentrado}}{\text{Receita Total}} \times 100$
-   - *Referência:* ideal abaixo de **30% a 35%**. Quando o concentrado consome mais de 40% da receita bruta, a margem para cobrir mão de obra e outros custos fica seriamente comprometida.
+   - *Referência:* ideal abaixo de **30% a 35%**. Quando o concentrado consome mais de 40% da receita bruta, a margem para cobrir mão de obra e outros custos fica seriamente comprometida *(fonte: PENDENTE)*.
 5. **Produtividade da terra e da mão de obra:**
    - $\text{Litros/ha} = \text{Produção Mensal} / \text{Área (ha)}$
    - $\text{Litros/dia-homem} = \text{Produção Diária} / \text{Trabalhadores}$

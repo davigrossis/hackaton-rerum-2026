@@ -17,7 +17,8 @@ calculadas:
     tipo: numero
     unidade: R$
     formula: receita_leite + outras_receitas
-    entradas: [producao_litros, preco_leite_fazenda]
+    entradas: [receita_leite]
+    opcionais: [outras_receitas]
     fonte: "Fórmula de receita total"
 
   # Custos operacionais
@@ -27,6 +28,7 @@ calculadas:
     unidade: R$
     formula: custo_concentrado + custo_volumoso + custo_mineral
     entradas: [custo_concentrado, custo_volumoso]
+    opcionais: [custo_mineral]
     fonte: "Embrapa Gado de Leite"
 
   - nome: coe
@@ -35,6 +37,7 @@ calculadas:
     unidade: R$
     formula: custo_concentrado + custo_volumoso + custo_mineral + custo_mao_obra_contratada + custo_sanidade_reproducao + custo_energia_combustivel + custo_outros
     entradas: [custo_concentrado, custo_volumoso, custo_mao_obra_contratada]
+    opcionais: [custo_mineral, custo_sanidade_reproducao, custo_energia_combustivel, custo_outros]
     fonte: "Matsunaga et al. (1976)"
 
   - nome: cot
