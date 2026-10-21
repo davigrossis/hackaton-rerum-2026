@@ -1,6 +1,8 @@
 # AGENTS.md
 
-Guia do repositório para os modelos e para a equipe. Vale para todo o projeto.
+Guia do repositório para os agentes de IA (Claude, Gemini, GPT) e para a equipe. Vale para todo o projeto.
+
+**Fonte única:** o `CLAUDE.md` só importa este arquivo (`@AGENTS.md`), para todos os agentes lerem as mesmas regras. Edite só o `AGENTS.md`; um teste falha se o `CLAUDE.md` tiver qualquer outra coisa.
 
 ## Projeto
 Sistema especialista de **diagnóstico econômico da atividade leiteira**: Hackathon UFJF 2026, tema **T3 Economia** ("análise econômica e financeira com dados zootécnicos e custos de insumos").
@@ -97,7 +99,7 @@ regras:
 - PR que altera `conhecimento/` precisa de revisão de outra pessoa (a base é versionada e revisada).
 - Depois do congelamento (qua 21/10 às 23h59), só entram correções, docs e apresentação.
 
-## Regras de trabalho para o Claude
+## Regras de trabalho para os agentes de IA
 1. **Nunca** coloque chamada a LLM ou API de IA no código da aplicação.
 2. Faça mudanças pequenas, restritas à issue pedida. Nada de refatoração "de brinde".
 3. Não adicione dependência sem perguntar. Hoje são: streamlit, PyYAML, pandas, pytest, ruff.

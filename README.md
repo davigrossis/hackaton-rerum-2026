@@ -27,7 +27,7 @@ ruff check . && ruff format .      # lint e formatação
 | `tests/` | Testes (pytest) |
 | `docs/` | Processo com IA, arquitetura e regras |
 
-Convenções e regras de trabalho: `CLAUDE.md`. Detalhes da base de preços: `base.md`.
+Convenções e regras de trabalho, para a equipe e para os agentes de IA: `AGENTS.md` (o `CLAUDE.md` só importa esse arquivo). Detalhes da base de preços: `base.md`.
 
 ## Fonte dos dados
 Preços agropecuários mensais por UF: CONAB (detalhes e licença em `base.md`).

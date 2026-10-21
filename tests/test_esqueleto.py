@@ -1,4 +1,4 @@
-"""Testes de fumaça: a base de conhecimento carrega e o app abre sem erro."""
+"""Testes de fumaça: base de conhecimento, app e fonte única das regras (AGENTS.md)."""
 
 from pathlib import Path
 
@@ -20,3 +20,9 @@ def test_app_abre_sem_erro():
     app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
     assert not app.exception
     assert app.title[0].value == "EconoLeite"
+
+
+def test_claude_md_so_importa_agents_md():
+    # Fonte única: Claude, Gemini e GPT precisam ler as mesmas regras.
+    claude_md = (RAIZ / "CLAUDE.md").read_text(encoding="utf-8")
+    assert claude_md.strip() == "@AGENTS.md"
