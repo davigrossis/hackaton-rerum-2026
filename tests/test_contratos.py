@@ -32,9 +32,35 @@ def test_base_real_carrega():
     base = carregar_base(PASTA_CONHECIMENTO)
     assert base.versao == "0.1"
     assert len(base.regras) == 0
-    assert len(base.perguntas) == 0
-    assert len(base.secoes) == 0
+    assert len(base.perguntas) == 22
+    assert len(base.secoes) == 6
     assert "preco_leite_uf" in base.variaveis
+    assert "receita_total" in base.variaveis
+    assert "situacao_economica" in base.variaveis
+
+
+def test_toda_pergunta_tem_ajuda_e_faixa_nas_numericas():
+    base = carregar_base(PASTA_CONHECIMENTO)
+    for p in base.perguntas:
+        assert p.ajuda and p.ajuda.strip(), f"Pergunta '{p.id}' sem ajuda"
+        if p.tipo in ("numero", "inteiro"):
+            assert p.faixa is not None, (
+                f"Pergunta numérica '{p.id}' sem faixa declarada"
+            )
+            assert p.faixa[0] < p.faixa[1], f"Pergunta '{p.id}' com faixa inválida"
+
+
+def test_todas_calculadas_tem_entradas_validas():
+    base = carregar_base(PASTA_CONHECIMENTO)
+    calculadas = [v for v in base.variaveis.values() if v.grupo == "calculadas"]
+    assert len(calculadas) == 21
+    for c in calculadas:
+        assert c.formula and c.formula.strip()
+        assert c.entradas, f"Calculada '{c.nome}' sem entradas"
+        for entrada in c.entradas:
+            assert entrada in base.variaveis, (
+                f"Entrada '{entrada}' de '{c.nome}' não existe"
+            )
 
 
 def test_externas_batem_com_fatos_mercado():
