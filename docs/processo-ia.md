@@ -5,37 +5,8 @@ Registro de como a IA foi usada no projeto; a apresentação precisa mostrar iss
 ## Agentes
 Cada dev usa o agente que preferir: Claude Code, Gemini ou GPT. O contexto compartilhado é o `AGENTS.md`; o `CLAUDE.md` só importa esse arquivo, então todos os agentes leem as mesmas regras.
 
-## Nivelamento (diretriz 2)
-Cada dev registra o prompt que usou para pedir à IA a explicação de sistema especialista e motor de inferência, e um resumo do que entendeu.
-
-| Dev | Prompt | O que entendi |
-|---|---|---|
-| A | | |
-| B | | |
-| C | | |
-
-## Arquitetura
-
-```mermaid
-flowchart LR
-    KA["<b>Aquisição de conhecimento</b><br/>especialista + engenheiro"]
-    KB["<b>Base de conhecimento</b><br/>regras, variáveis, pesos (CF)<br/>versionada e revisada"]
-    IE["<b>Motor de inferência</b><br/>casa regras com fatos,<br/>resolve conflito, dispara"]
-    WM["<b>Memória de trabalho</b><br/>fatos da sessão atual<br/>respostas + conclusões"]
-    EXT["<b>Fontes de dados externas</b><br/>prontuário, sensores, APIs"]
-    UI["<b>Interface do usuário</b><br/>exibe perguntas, coleta respostas<br/>e apresenta o parecer final"]
-    EXP["<b>Módulo de explicação</b><br/>responde por quê? e como?<br/>a partir do traço de inferência"]
-
-    KA -->|edita| KB
-    KB -->|regras| IE
-    IE <-->|fatos| WM
-    EXT -->|alimenta| WM
-    UI <-->|perguntas / respostas| IE
-    IE -->|traço de regras| EXP
-
-    classDef core fill:#e6f4fa,stroke:#29a3c9,stroke-width:2px
-    class IE core
-```
+## Guia do sistema especialista (diretriz 2)
+A diretriz 2 do slide 12 pede que, antes de qualquer coisa, a IA explique o que é um sistema especialista e como funciona um motor de inferência. A equipe fez isso num guia único e didático, em vez de um registro por pessoa: `docs/sistema-especialista.md` (issue #27), que também traz o diagrama do slide 14. O prompt usado e o que a equipe corrigiu ficam no diário abaixo.
 
 ## Diário de decisões
 | Data | Pedido à IA | Decisão | O que a IA errou ou a equipe ajustou |
@@ -51,3 +22,5 @@ flowchart LR
 | 20/10 | Fechar o que faltava da #1 e abrir o PR | O `AGENTS.md` virou a fonte única das regras; o `CLAUDE.md` só tem `@AGENTS.md`, e um teste garante isso | A equipe vai usar Claude, Gemini e GPT, então as regras precisam ser as mesmas para todos os agentes |
 | 20/10 | Fazer a #4: fonte externa CONAB | `fatos_mercado(uf, periodo)` devolve um dicionário de fatos `{valor, unidade, fonte, periodo}`: leite (mês e média de 12m), milho, diesel e troca leite:milho (mês e média). Lista fechada por `id_produto` + nível; vazio ou zero não vira fato. Milho e diesel usam o último preço até o mês pedido, com a data dele | O script de download (`baixar_dados.py`) foi removido a pedido da equipe: a base é atualizada e repassada à mão. Ao testar o script, o link da CONAB redirecionava para um endereço com 404 |
 | 21/10 | Revisar o `mercado.py` passo a passo e preparar a base para crescer, gerando o YAML e os testes a partir da própria base da CONAB | Catálogo `conhecimento/mercado.yaml` escrito pela equipe (id, nome na CONAB, unidade, faixa); testes gerados a partir do catálogo, um conjunto por produto; script `dados/rascunho_catalogo.py` que imprime um rascunho para a pessoa completar | A ideia inicial era gerar YAML e testes a partir dos dados. A IA mostrou que o teste ficaria circular: com o id 4744 (soja) no lugar do 4742 (milho), só a conferência do nome falha, e a faixa passa. A faixa exata do observado virou uma faixa larga, para não descartar preço novo real |
+| 21/10 | Rever a issue de nivelamento (#27) | A #27 virou `fase-0-guia-do-sistema-especialista`: um guia único, didático e detalhado em `docs/sistema-especialista.md`, no lugar do registro individual de cada dev. A diretriz 2 só pede que a IA explique; não exige uma explicação por pessoa. O diagrama do slide 14 saiu deste arquivo e foi para o guia | A mudança veio da equipe: o registro individual rendia pouco como material de estudo |
+| 21/10 | Escrever um guia didático e detalhado de sistema especialista e motor de inferência, a partir do slide 14 e com exemplos do projeto | `docs/sistema-especialista.md`, com 9 seções escritas e revisadas uma a uma: conceito, os 7 componentes, fatos e regras, ciclo do motor, conflito, CF, explicação, exemplo completo e glossário | Para não inventar conhecimento de domínio, a fazenda e as regras de exemplo ficaram marcadas como ilustrativas (`fonte: "PENDENTE"`); só os preços da CONAB são reais. Todas as contas foram conferidas. Uma seção de perguntas para se testar foi escrita e retirada a pedido da equipe. Ficaram dois pontos para a #5: o CF de premissa que compara dois fatos e o CF de uma regra que já disparou quando a causa muda depois |

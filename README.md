@@ -25,7 +25,7 @@ ruff check . && ruff format .      # lint e formatação
 | `dominio/` | Indicadores econômicos, dados de mercado e diagnóstico |
 | `dados/` | Fontes de dados externas (snapshots) e casos de teste |
 | `tests/` | Testes (pytest); o que cada arquivo testa: `tests/README.md` |
-| `docs/` | Processo com IA, arquitetura e regras |
+| `docs/` | Guia do sistema especialista (`docs/sistema-especialista.md`), processo com IA, arquitetura e regras |
 
 Convenções e regras de trabalho, para a equipe e para os agentes de IA: `AGENTS.md` (o `CLAUDE.md` só importa esse arquivo). Detalhes da base de preços: `base.md`.
 
