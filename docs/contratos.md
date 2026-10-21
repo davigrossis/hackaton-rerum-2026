@@ -161,6 +161,20 @@ def perguntas_pendentes(
 ) -> list[Pergunta]: ...
 ```
 
+#### Semântica do motor (#5)
+**Premissas** (`avaliar_premissas`): todas são avaliadas, sem parar na primeira falsa, para o traço e o diálogo (#26) enxergarem cada uma.
+- Valor com CF < 0,2 conta como ausente. Fato ausente torna a premissa falsa, inclusive com `!=` (D6).
+- `$nome`: o alvo é o valor do outro fato, e o CF da premissa é o menor dos dois (D5). Referência ausente torna a premissa falsa.
+- Fato com vários valores: `==`, `in` e as comparações valem se algum valor satisfizer, com o maior CF entre os que satisfazem; `!=` exige que nenhum valor seja igual, com o menor CF entre os valores.
+- `PremissaAvaliada.valor_fato` traz o valor, uma tupla quando há vários, ou `None` quando o fato falta. Premissa falsa tem CF 0.
+
+**Ciclo** (`inferir`):
+- Memória de entrada que já traga conclusão gera `ValueError`: só as regras concluem (D8). O motor trabalha numa cópia, e a memória recebida não muda.
+- Camada por camada (D3), repete casar → resolver o conflito (maior `prioridade` → mais condições → ordem no arquivo) → disparar, até o conjunto de conflito ficar vazio. Cada regra dispara no máximo uma vez.
+- A conclusão entra com CF = `cf_regra × menor CF das premissas`, `origem="regra"` e o id da regra. Se outra regra concluir o mesmo valor, a memória combina os CFs.
+- Fato `unico`: a regra vencedora bloqueia as do conjunto que concluiriam outro valor. Elas saem da disputa e ficam em `Ciclo.bloqueadas`, no ciclo da vencedora.
+- Uma passada por camada chega ao ponto fixo porque nenhuma premissa lê conclusão da própria camada ou de camada posterior, nem pelo `$nome` (D4, checada em `carregar_base`).
+
 ### 4.4 Módulo de Explicação (`motor/explicacao.py`)
 ```python
 def como(resultado: Resultado, fato: str, valor: Any = None) -> list[NoComo]: ...
