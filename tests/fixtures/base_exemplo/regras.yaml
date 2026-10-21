@@ -1,0 +1,52 @@
+versao: "0.1"
+
+regras:
+  - id: R-IND-01
+    descricao: Preço recebido pela fazenda abaixo do preço da UF no mesmo mês
+    camada: indicador
+    prioridade: 50
+    se:
+      - [preco_leite_fazenda, "<", $preco_leite_uf]
+    entao:
+      fato: preco_leite
+      valor: abaixo_mercado
+    cf: 1.0
+    fonte: "PENDENTE"
+
+  - id: R-SIT-03
+    descricao: Receita cobre o COE mas não o COT; sobrevive só no curto prazo
+    camada: situacao
+    prioridade: 50
+    se:
+      - [receita_total, ">=", $coe]
+      - [receita_total, "<", $cot]
+    entao:
+      fato: situacao_economica
+      valor: curto_prazo
+    cf: 1.0
+    fonte: "Matsunaga et al. (1976), metodologia de custo operacional"
+
+  - id: R-CAU-01
+    descricao: No curto prazo e com preço abaixo do mercado, o preço recebido é causa provável
+    camada: causa
+    prioridade: 50
+    se:
+      - [situacao_economica, "==", curto_prazo]
+      - [preco_leite, "==", abaixo_mercado]
+    entao:
+      fato: causa
+      valor: preco_recebido_baixo
+    cf: 0.7
+    fonte: "PENDENTE"
+
+  - id: R-REC-01
+    descricao: Preço recebido baixo; negociar com o laticínio
+    camada: recomendacao
+    prioridade: 50
+    se:
+      - [causa, "==", preco_recebido_baixo]
+    entao:
+      fato: recomendacao
+      valor: negociar_com_laticinio
+    cf: 0.8
+    fonte: "PENDENTE"

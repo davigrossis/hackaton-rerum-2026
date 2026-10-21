@@ -1,0 +1,44 @@
+# Variáveis que não são perguntas: calculadas, externas e conclusões.
+# Formato completo e documentação em docs/contratos.md.
+versao: "0.1"
+
+calculadas: []
+
+externas:
+  - nome: preco_leite_uf
+    descricao: Preço médio do leite recebido pelo produtor na UF, no mês de referência
+    tipo: numero
+    unidade: R$/L
+    fonte: "CONAB, Preços Agropecuários Mensais por UF (PrecosMensalUF.txt)"
+
+  - nome: preco_leite_uf_media_12m
+    descricao: Média móvel de 12 meses do preço do leite recebido pelo produtor na UF
+    tipo: numero
+    unidade: R$/L
+    fonte: "CONAB, Preços Agropecuários Mensais por UF (PrecosMensalUF.txt)"
+
+  - nome: preco_milho_uf
+    descricao: Preço do milho em grãos na UF (última cotação disponível até o mês de referência)
+    tipo: numero
+    unidade: R$/kg
+    fonte: "CONAB, Preços Agropecuários Mensais por UF (PrecosMensalUF.txt)"
+
+  - nome: preco_diesel_uf
+    descricao: Preço do óleo diesel pago pelo produtor na UF (última cotação disponível)
+    tipo: numero
+    unidade: R$/L
+    fonte: "CONAB, Preços Agropecuários Mensais por UF (PrecosMensalUF.txt)"
+
+  - nome: troca_leite_milho_uf
+    descricao: Relação de troca leite:milho na UF (kg de milho comprados com 1 L de leite)
+    tipo: numero
+    unidade: kg/L
+    fonte: "CONAB, Preços Agropecuários Mensais por UF (PrecosMensalUF.txt)"
+
+  - nome: troca_leite_milho_uf_media_12m
+    descricao: Média de 12 meses da relação de troca leite:milho na UF
+    tipo: numero
+    unidade: kg/L
+    fonte: "CONAB, Preços Agropecuários Mensais por UF (PrecosMensalUF.txt)"
+
+conclusoes: []

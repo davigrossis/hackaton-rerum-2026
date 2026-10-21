@@ -391,7 +391,9 @@ while True:
     if not conjunto:
         break  # nada mais pode ser concluído
     regra = resolver_conflito(conjunto)  # seção 5
-    memoria.adicionar(regra.conclusao, cf=calcular_cf(regra, memoria), origem=regra.id)  # seção 6
+    memoria.adicionar(
+        regra.conclusao, cf=calcular_cf(regra, memoria), origem=regra.id
+    )  # seção 6
     traco.append(registro_do_disparo(regra, memoria))  # seção 7
     disparadas.add(regra.id)
 ```

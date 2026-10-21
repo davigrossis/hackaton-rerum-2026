@@ -1,0 +1,36 @@
+versao: "0.1"
+
+secoes:
+  - id: identificacao
+    titulo: Identificação
+  - id: producao
+    titulo: Produção e Receitas
+
+perguntas:
+  - id: uf
+    secao: identificacao
+    texto: Em que UF fica a fazenda?
+    ajuda: Estado onde a propriedade está localizada.
+    tipo: escolha
+    opcoes: [AC, AL, AP, AM, BA, CE, DF, ES, GO, MA, MT, MS, MG, PA, PB, PR, PE, PI, RJ, RN, RS, RO, RR, SC, SP, SE, TO]
+    obrigatoria: true
+
+  - id: preco_leite_fazenda
+    secao: producao
+    texto: Qual o preço médio recebido por litro de leite?
+    ajuda: Valor líquido recebido pelo produtor no mês.
+    tipo: numero
+    unidade: R$/L
+    faixa: [0.5, 20.0]
+    fonte_faixa: PENDENTE
+    obrigatoria: true
+
+  - id: producao_litros
+    secao: producao
+    texto: Qual a produção total de leite no mês?
+    ajuda: Volume total ordenhado e entregue/processado no mês.
+    tipo: numero
+    unidade: L/mês
+    faixa: [100.0, 1000000.0]
+    fonte_faixa: PENDENTE
+    obrigatoria: true

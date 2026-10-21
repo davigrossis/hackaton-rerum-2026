@@ -1,3 +1,4 @@
-# Base de conhecimento: regras de produção. Formato descrito no CLAUDE.md.
+# Base de conhecimento: regras de produção.
+# Formato completo e documentação em docs/contratos.md.
 versao: "0.1"
 regras: []
