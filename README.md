@@ -6,15 +6,53 @@ A decisão vem de uma base de conhecimento explícita e de um motor de inferênc
 ## Como rodar
 Requer Python 3.11 ou mais novo. Tudo roda em localhost, sem internet.
 
+### Instalação padrão
 ```bash
+# 1. Clone o repositório
+git clone https://github.com/davigrossis/hackaton-rerun-2026.git
+cd hackaton-rerun-2026
+
+# 2. Crie e ative o ambiente virtual
 python3 -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+source .venv/bin/activate          # Windows (PowerShell): .venv\Scripts\Activate.ps1
+                                   # Windows (CMD):        .venv\Scripts\activate.bat
+
+# 3. Instale as dependências
 pip install -r requirements-dev.txt
 
+# 4. Inicie o sistema especialista
 streamlit run app.py               # abra http://localhost:8501
-pytest -q                          # todos os testes; o que cada arquivo testa: tests/README.md
-ruff check . && ruff format .      # lint e formatação
+pytest -q                          # suíte de testes; detalhes em tests/README.md
+ruff check . && ruff format .      # auditoria de código e formatação
 ```
+
+### Como testar offline (sem Wi-Fi)
+A aplicação roda 100% offline em localhost, cumprindo a regra fundamental do hackathon:
+1. Desconecte o Wi-Fi ou desative os adaptadores de rede da máquina.
+2. Execute a suíte de testes e o aplicativo:
+   ```bash
+   pytest -q                      # roda todos os testes sem acesso externo à internet
+   pytest tests/test_offline.py -v # validação formal com bloqueio de sockets externos
+   streamlit run app.py           # sobe a interface web no navegador localmente
+   ```
+
+### Instalação em máquina totalmente desconectada (sem internet prévia)
+Caso a máquina de apresentação não possua conexão com a internet durante o setup:
+1. Em uma máquina conectada, baixe os pacotes para um diretório local:
+   ```bash
+   pip download -r requirements-dev.txt -d wheels/
+   ```
+2. Transfira a pasta `wheels/` (ex.: pendrive) para a máquina offline e instale:
+   ```bash
+   pip install --no-index --find-links wheels/ -r requirements-dev.txt
+   ```
+
+### Tempo de inicialização do zero (#21)
+O projeto foi auditado e cronometrado a partir de um clone limpo, subindo do zero em **1,90 minutos** (critério de aceite do hackathon: < 10 minutos):
+- Criação do `.venv`: 11,2 s
+- Instalação das dependências (pip): 76,3 s
+- Execução de toda a suíte de testes (278 testes): 21,7 s
+- Inicialização do app Streamlit: 2,5 s
 
 Na barra lateral, selecione **Base de conhecimento** para consultar a versão,
 as condições, conclusões, confiança e fontes de todas as regras usadas pelo motor.
