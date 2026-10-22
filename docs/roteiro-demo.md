@@ -146,7 +146,7 @@
 ### 08:00 — Preparação na Máquina da Apresentação
 - [ ] Ligar a máquina oficial da demonstração.
 - [ ] **Desativar Wi-Fi e adaptadores de rede** (modo avião).
-- [ ] Abrir o terminal no diretório do projeto: `cd C:\hackaton-rerun-2026`.
+- [ ] Abrir o terminal no diretório do projeto: `cd C:\hackaton-rerum-2026`.
 - [ ] Rodar `.venv\Scripts\pytest -q` e confirmar **278 testes passando** sem internet.
 - [ ] Iniciar o Streamlit: `.venv\Scripts\streamlit run app.py`.
 - [ ] Acessar `http://localhost:8501` e verificar se a interface carrega em modo tela cheia (F11).
