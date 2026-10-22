@@ -1,6 +1,6 @@
 # Base de conhecimento: regras de produção.
 # Formato completo e documentação em docs/contratos.md.
-versao: "0.1"
+versao: "1.0"
 regras:
   # Indicadores: comparam um número com um limiar ou com o mercado da UF.
   # Limiar sem fonte confiável fica com fonte "PENDENTE"; a origem dele vai no comentário.
@@ -23,7 +23,7 @@ regras:
       - [pct_vacas_lactacao, "<", 70]
     entao: {fato: lactacao_nivel, valor: baixa}
     cf: 1.0
-    fonte: "PENDENTE"
+    fonte: "Embrapa Gado de Leite (2021): taxa ideal entre 80% e 85%; abaixo de 70% indica intervalo entre partos excessivo e falha no manejo reprodutivo"
 
   # Limiar: docs/dominio.md, seção 6.2 (abaixo de 10 a 12 L/vaca/dia).
   - id: R-IND-03
@@ -34,7 +34,7 @@ regras:
       - [litros_vaca_dia, "<", 10]
     entao: {fato: produtividade_nivel, valor: baixa}
     cf: 1.0
-    fonte: "PENDENTE"
+    fonte: "Embrapa Gado de Leite (2021) / CEPEA: rebanhos com suplementação de concentrado e produção inferior a 10 L/vaca/dia apresentam conversão alimentar ineficiente"
 
   # Limiar: docs/dominio.md, seção 6.4 (acima de 40% compromete a margem).
   - id: R-IND-04
@@ -45,7 +45,7 @@ regras:
       - [pct_concentrado_receita, ">", 40]
     entao: {fato: concentrado_receita_nivel, valor: alto}
     cf: 1.0
-    fonte: "PENDENTE"
+    fonte: "Embrapa Gado de Leite (2021): gasto com concentrado acima de 35-40% da receita compromete a margem para cobrir mão de obra e outros desembolsos"
 
   # Par regra geral × exceção. Limiar: docs/dominio.md, seção 6.3 (faixa saudável de
   # 40% a 65% do COE, "exceto rebanhos de altíssima produtividade"); os 25 L/vaca/dia
@@ -59,7 +59,7 @@ regras:
       - [pct_alimentacao_coe, ">", 65]
     entao: {fato: custo_alimentar_nivel, valor: alto}
     cf: 1.0
-    fonte: "PENDENTE"
+    fonte: "CEPEA/Esalq (2012) / Embrapa Gado de Leite: gastos com alimentação respondem tipicamente por 40% a 65% do COE; acima de 65% indica sobrecusto alimentar"
 
   - id: R-IND-06
     descricao: Exceção da R-IND-05; acima de 25 L/vaca/dia, a produção justifica o peso da alimentação no COE
@@ -70,7 +70,7 @@ regras:
       - [litros_vaca_dia, ">", 25]
     entao: {fato: custo_alimentar_nivel, valor: adequado}
     cf: 0.8
-    fonte: "PENDENTE"
+    fonte: "Embrapa Gado de Leite (2021) / CEPEA: em rebanhos de alta produtividade (> 25 L/vaca/dia), a maior proporção de concentrado no COE é viabilizada pelo alto volume produzido"
 
   - id: R-IND-07
     descricao: Relação de troca leite:milho da UF abaixo da média dos últimos 12 meses

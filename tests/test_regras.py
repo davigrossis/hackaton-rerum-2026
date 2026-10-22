@@ -204,14 +204,8 @@ def test_toda_regra_da_base_tem_caso():
 
 
 def test_regras_com_fonte_pendente():
-    """Limiar sem fonte confiável fica PENDENTE; ao achar a fonte, atualize esta lista."""
-    assert [r.id for r in BASE.regras_pendentes] == [
-        "R-IND-02",
-        "R-IND-03",
-        "R-IND-04",
-        "R-IND-05",
-        "R-IND-06",
-    ]
+    """Critério de aceite da #20: nenhuma regra pode ter fonte pendente na v1.0."""
+    assert [r.id for r in BASE.regras_pendentes] == []
 
 
 @pytest.mark.parametrize(
