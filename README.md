@@ -57,6 +57,13 @@ O projeto foi auditado e cronometrado a partir de um clone limpo, subindo do zer
 Na barra lateral, selecione **Base de conhecimento** para consultar a versão,
 as condições, conclusões, confiança e fontes de todas as regras usadas pelo motor.
 
+Na barra lateral, o seletor **Fazenda-exemplo** carrega três perfis para explorar
+cenários diferentes: uma fazenda excelente, mas sensível a queda de preço e
+produção; uma fazenda média, que pode atingir resultado bom com melhora de preço
+e produção; e uma fazenda ruim, dependente de preço, produção e custo do
+concentrado. A escolha preenche o formulário e reinicia a análise desde a
+primeira etapa.
+
 ## Estrutura
 | Pasta | Papel no modelo conceitual |
 |---|---|

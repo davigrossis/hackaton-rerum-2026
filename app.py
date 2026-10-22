@@ -14,6 +14,7 @@ from interface.estilo import (
     cabecalho,
     etapas,
 )
+from interface.exemplo import OPCOES_FAZENDAS_EXEMPLO
 from interface.resultado import renderizar_parecer, renderizar_revisao
 from motor.explicacao import por_que
 from motor.inferencia import Resultado, perguntas_pendentes
@@ -80,7 +81,15 @@ def _barra_lateral(secoes: list[fm.SecaoComPerguntas], ids: set[str]) -> None:
         st.progress(feitas / total if total else 1.0)
         st.caption(f"{feitas} de {total} campos obrigatórios preenchidos")
         st.divider()
-        st.button("Carregar fazenda-exemplo", on_click=fm.carregar_exemplo, args=(ids,))
+        st.selectbox(
+            "Fazenda-exemplo",
+            OPCOES_FAZENDAS_EXEMPLO,
+            index=None,
+            placeholder="Selecione um perfil para carregar",
+            key="fazenda_exemplo",
+            on_change=fm.carregar_exemplo_selecionado,
+            args=(ids,),
+        )
         st.button("Limpar respostas", on_click=fm.limpar_respostas)
 
 

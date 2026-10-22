@@ -95,9 +95,13 @@ def _clicar(botoes, rotulo: str) -> None:
     next(b for b in botoes if b.label == rotulo).click().run()
 
 
+def _selecionar_exemplo(app) -> None:
+    app.sidebar.selectbox[0].set_value("Excelente — sensível a preço e produção").run()
+
+
 def test_fazenda_exemplo_gera_parecer_real_na_tela():
     app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
-    _clicar(app.sidebar.button, "Carregar fazenda-exemplo")
+    _selecionar_exemplo(app)
     # Clicar em "Avançar": mudar só a etapa não basta, as pills voltam à etapa 0.
     for _ in carregar_base().secoes:
         _clicar(app.button, "Avançar")
@@ -126,7 +130,7 @@ def test_app_base_de_conhecimento_lista_todas_as_regras():
 
 def test_app_entrada_estimada_reduz_confianca_ponta_a_ponta():
     app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
-    _clicar(app.sidebar.button, "Carregar fazenda-exemplo")
+    _selecionar_exemplo(app)
 
     # Navega até a seção 2 (Faturamento e Receitas), onde fica preco_leite_fazenda
     _clicar(app.button, "Avançar")  # etapa 1 (Rebanho)
@@ -166,7 +170,7 @@ def test_app_entrada_estimada_reduz_confianca_ponta_a_ponta():
 
 def test_app_limpar_respostas_zera_estimados():
     app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
-    _clicar(app.sidebar.button, "Carregar fazenda-exemplo")
+    _selecionar_exemplo(app)
     _clicar(app.button, "Avançar")  # etapa 1 (Rebanho)
 
     cb = next(c for c in app.checkbox if c.key == "estimado_vacas_lactacao")
@@ -179,14 +183,16 @@ def test_app_limpar_respostas_zera_estimados():
 
 def test_app_carregar_exemplo_zera_estimados():
     app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
-    _clicar(app.sidebar.button, "Carregar fazenda-exemplo")
+    _selecionar_exemplo(app)
     _clicar(app.button, "Avançar")  # etapa 1 (Rebanho)
 
     cb = next(c for c in app.checkbox if c.key == "estimado_vacas_lactacao")
     cb.check().run()
     assert "vacas_lactacao" in app.session_state[CHAVE_ESTIMADOS]
 
-    _clicar(app.sidebar.button, "Carregar fazenda-exemplo")
+    app.sidebar.selectbox[0].set_value(
+        "Médio — pode virar bom com preço e produção maiores"
+    ).run()
     assert app.session_state[CHAVE_ESTIMADOS] == set()
 
 
@@ -225,7 +231,7 @@ def test_quatro_casos_renderizam_parecer_sem_erro(nome_arquivo):
 def _gerar_sem_ccs_e_cpp() -> AppTest:
     """Fazenda-exemplo com CCS e CPP vazios: opcionais que destravam a R-IND-08 e a R-IND-09."""
     app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
-    _clicar(app.sidebar.button, "Carregar fazenda-exemplo")
+    _selecionar_exemplo(app)
     for _ in carregar_base().secoes[:-1]:
         _clicar(app.button, "Avançar")
     for chave in ("resposta_ccs", "resposta_cpp"):
@@ -270,7 +276,7 @@ def test_pendencia_preenchida_no_dialogo_entra_no_parecer():
 
 def test_como_e_memoria_aparecem_no_parecer():
     app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
-    _clicar(app.sidebar.button, "Carregar fazenda-exemplo")
+    _selecionar_exemplo(app)
     for _ in carregar_base().secoes:
         _clicar(app.button, "Avançar")
     _clicar(app.button, "Gerar diagnóstico")

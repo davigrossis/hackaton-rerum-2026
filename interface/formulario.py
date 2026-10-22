@@ -7,7 +7,7 @@ from typing import Any
 import streamlit as st
 
 from dominio.diagnostico import validar_respostas
-from interface.exemplo import FAZENDA_EXEMPLO
+from interface.exemplo import FAZENDAS_EXEMPLO, OPCOES_FAZENDAS_EXEMPLO
 from motor.regras import Base, Pergunta, Regra, Secao
 
 CHAVE_DADOS = "dados"
@@ -73,17 +73,24 @@ def _limpar_widgets() -> None:
         del st.session_state[chave]
 
 
-def carregar_exemplo(ids_validos: set[str]) -> None:
+def carregar_exemplo(nome: str, ids_validos: set[str]) -> None:
     """Preenche só campos que existem na base e volta à primeira etapa."""
     _limpar_widgets()
     st.session_state[CHAVE_DADOS] = {
-        k: v for k, v in FAZENDA_EXEMPLO.items() if k in ids_validos
+        k: v for k, v in FAZENDAS_EXEMPLO[nome].items() if k in ids_validos
     }
     st.session_state[CHAVE_ESTIMADOS] = set()
     st.session_state[CHAVE_ETAPA] = 0
     st.session_state[CHAVE_ALCANCADA] = 0
     st.session_state[CHAVE_NAVEGACAO] = 0
     st.session_state[CHAVE_RESULTADO] = None
+
+
+def carregar_exemplo_selecionado(ids_validos: set[str]) -> None:
+    """Carrega a fazenda escolhida no seletor lateral."""
+    nome = st.session_state.get("fazenda_exemplo")
+    if nome in OPCOES_FAZENDAS_EXEMPLO:
+        carregar_exemplo(nome, ids_validos)
 
 
 def limpar_respostas() -> None:

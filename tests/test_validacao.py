@@ -108,6 +108,10 @@ def _clicar(app, rotulo):
     next(b for b in app.button if b.label == rotulo).click().run()
 
 
+def _selecionar_exemplo(app):
+    app.sidebar.selectbox[0].set_value("Excelente — sensível a preço e produção").run()
+
+
 def test_formulario_vazio_chega_a_revisao_sem_quebrar():
     app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
     for _ in BASE.secoes:
@@ -120,7 +124,7 @@ def test_formulario_vazio_chega_a_revisao_sem_quebrar():
 
 def test_revisao_bloqueia_zero_vacas_e_corrige_sem_perder_estimativa():
     app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
-    _clicar(app, "Carregar fazenda-exemplo")
+    _selecionar_exemplo(app)
     for _ in BASE.secoes:
         _clicar(app, "Avançar")
     # Injeta na revisão para exercitar a validação independente dos limites do widget.
