@@ -69,6 +69,7 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - diálogo de pendências (#22): com CCS e CPP vazios, ele aparece uma vez; "Continuar diagnóstico" leva ao parecer sem preencher (o opcional não vira fato) ou com o valor preenchido no diálogo, e um diagnóstico novo pergunta de novo;
 - chave que não é pergunta da base gera `ValueError`;
 - **na tela (#10, #13, #16):** com `AppTest`, testa a fazenda-exemplo e os 4 casos conhecidos de referência. O parecer renderiza a situação destacada, cards fazenda × CONAB, gráfico do COE, causas e recomendações por CF, explicações "como cheguei aqui?" e "por que pergunto?" no formulário, expander com toda a memória de trabalho e rodapé com versão e data do snapshot.
+- gráfico do COE: colunas verticais com o % em pt-BR em cima (`35,0%`, `100,0%`), na ordem da tabela (maior para a menor) e com folga no topo para o rótulo da coluna mais alta; no parecer, a tabela ao lado sai na mesma ordem.
 
 ### `test_validacao.py` (#14)
 - Valida os extremos e valores fora das faixas declaradas, obrigatórios, opcionais, inteiros, números não finitos, UF e mês;

@@ -7,9 +7,11 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+import altair as alt
 import pandas as pd
 import streamlit as st
 
+from interface.estilo import VERDE
 from interface.formulario import SecaoComPerguntas
 from interface.simulacao import renderizar_simulacao
 from motor.explicacao import NoComo, como, por_que
@@ -80,6 +82,11 @@ def formatar(valor: Any, unidade: str | None = None) -> str:
     else:
         texto = str(valor)
     return f"{texto} {unidade}" if unidade else texto
+
+
+def _percentual(valor: float) -> str:
+    """Percentual com uma casa e vírgula decimal: 35.04 → '35,0%'."""
+    return f"{valor:.1f}%".replace(".", ",")
 
 
 def renderizar_revisao(
@@ -308,24 +315,62 @@ def _grafico_coe(resultado: Resultado, base: Base) -> None:
     if not dados:
         return
 
-    df = pd.DataFrame(dados)
-    col1, col2 = st.columns([3, 2])
+    df = pd.DataFrame(dados).sort_values("Participação (%)", ascending=False)
+    col1, col2 = st.columns([5, 4])
 
     with col1:
-        st.bar_chart(
-            df.set_index("Componente")["Participação (%)"],
-            horizontal=True,
-        )
+        st.altair_chart(_colunas_coe(df), width="stretch")
 
     with col2:
         df_tabela = df.copy()
         df_tabela["Valor (R$)"] = df_tabela["Valor (R$)"].apply(
             lambda v: formatar(v, "R$")
         )
-        df_tabela["Participação (%)"] = df_tabela["Participação (%)"].apply(
-            lambda p: f"{p:.1f}%"
+        df_tabela["Participação (%)"] = df_tabela["Participação (%)"].apply(_percentual)
+        st.dataframe(
+            df_tabela.rename(columns={"Participação (%)": "%"}),
+            hide_index=True,
+            column_config={
+                "Componente": st.column_config.TextColumn(width=150),
+                "Valor (R$)": st.column_config.TextColumn(width=100),
+                "%": st.column_config.TextColumn(width=60),
+            },
         )
-        st.dataframe(df_tabela, hide_index=True)
+
+
+def _colunas_coe(df: pd.DataFrame) -> alt.LayerChart:
+    """Colunas verticais da participação no COE, na ordem em que o df chega."""
+    # Vega formata com ponto decimal; o texto já sai formatado em pt-BR.
+    df = df.assign(
+        rotulo=df["Participação (%)"].map(_percentual),
+        valor_fmt=df["Valor (R$)"].map(lambda v: formatar(v, "R$")),
+    )
+    # Folga no topo para o rótulo da coluna mais alta não ser cortado.
+    topo = df["Participação (%)"].max() * 1.15
+    base = alt.Chart(df).encode(
+        x=alt.X(
+            "Componente:N",
+            sort=None,
+            title=None,
+            axis=alt.Axis(labelAngle=-40, labelLimit=160, labelOverlap=False),
+        ),
+        y=alt.Y(
+            "Participação (%):Q",
+            title="Participação no COE (%)",
+            scale=alt.Scale(domain=[0, topo]),
+        ),
+        tooltip=[
+            alt.Tooltip("Componente:N"),
+            alt.Tooltip("valor_fmt:N", title="Valor"),
+            alt.Tooltip("rotulo:N", title="Participação"),
+        ],
+    )
+    colunas = base.mark_bar(color=VERDE, cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
+    # O Vega não herda a cor de texto do tema; cinza médio lê bem no claro e no escuro.
+    rotulos = base.mark_text(dy=-8, fontWeight="bold", color="#808495").encode(
+        text="rotulo:N"
+    )
+    return (colunas + rotulos).properties(height=320)
 
 
 def _causas_e_recomendacoes(resultado: Resultado, base: Base) -> None:

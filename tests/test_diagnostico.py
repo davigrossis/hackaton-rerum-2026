@@ -312,3 +312,55 @@ def test_por_que_aparece_no_formulario():
 
     tela = " ".join(m.value for m in app.markdown)
     assert "R-IND-" in tela or "R-CAU-" in tela
+
+
+def _grafico_coe_dict(participacoes: dict[str, float]) -> dict:
+    """Monta o gráfico do COE como a tela faz (df já ordenado) e devolve o spec."""
+    import pandas as pd
+
+    from interface.resultado import _colunas_coe
+
+    df = pd.DataFrame(
+        [
+            {"Componente": nome, "Valor (R$)": pct * 100, "Participação (%)": pct}
+            for nome, pct in participacoes.items()
+        ]
+    ).sort_values("Participação (%)", ascending=False)
+    return _colunas_coe(df).to_dict()
+
+
+def test_grafico_coe_tem_colunas_e_rotulo_em_pt_br_na_ordem_do_df():
+    spec = _grafico_coe_dict({"Volumoso": 20.04, "Concentrado": 58.3, "Outros": 5.0})
+
+    assert [camada["mark"]["type"] for camada in spec["layer"]] == ["bar", "text"]
+    linhas = next(iter(spec["datasets"].values()))
+    assert [linha["Componente"] for linha in linhas] == [
+        "Concentrado",
+        "Volumoso",
+        "Outros",
+    ]
+    assert [linha["rotulo"] for linha in linhas] == ["58,3%", "20,0%", "5,0%"]
+    # O gráfico segue a ordem do df (a mesma da tabela), sem reordenar sozinho.
+    assert spec["layer"][0]["encoding"]["x"]["sort"] is None
+
+
+def test_grafico_coe_deixa_folga_para_o_rotulo_de_100_por_cento():
+    spec = _grafico_coe_dict({"Concentrado": 100.0})
+
+    linhas = next(iter(spec["datasets"].values()))
+    assert linhas[0]["rotulo"] == "100,0%"
+    assert spec["layer"][0]["encoding"]["y"]["scale"]["domain"][1] > 100.0
+
+
+def test_parecer_mostra_grafico_e_tabela_do_coe_na_mesma_ordem():
+    app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
+    app.session_state[CHAVE_RESULTADO] = diagnosticar(CASO_LUCRO)
+    app.run()
+
+    assert not app.exception
+    graficos = app.get("vega_lite_chart")
+    assert len(graficos) == 1
+    tabela = next(d.value for d in app.dataframe if "%" in d.value.columns)
+    percentuais = [float(p.rstrip("%").replace(",", ".")) for p in tabela["%"]]
+    assert percentuais == sorted(percentuais, reverse=True)
+    assert all("," in p for p in tabela["%"])
