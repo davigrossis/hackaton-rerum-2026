@@ -55,8 +55,10 @@ def _navegacao(atual: int, ultima: int) -> None:
         voltar.button("Voltar", on_click=_ir_para_com_navegacao, args=(atual - 1,))
     if atual < ultima:
         avancar.button(
-            "Avançar", type="primary",
-            on_click=_ir_para_com_navegacao, args=(atual + 1,),
+            "Avançar",
+            type="primary",
+            on_click=_ir_para_com_navegacao,
+            args=(atual + 1,),
         )
 
 
