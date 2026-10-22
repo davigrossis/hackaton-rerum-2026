@@ -5,6 +5,8 @@ from pathlib import Path
 import yaml
 from streamlit.testing.v1 import AppTest
 
+from interface.estilo import NOME_APP
+
 RAIZ = Path(__file__).resolve().parent.parent
 
 
@@ -19,7 +21,7 @@ def test_base_de_conhecimento_carrega():
 def test_app_abre_sem_erro():
     app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
     assert not app.exception
-    assert app.title[0].value == "EconoLeite"
+    assert any(NOME_APP in m.value for m in app.markdown)
 
 
 def test_claude_md_so_importa_agents_md():

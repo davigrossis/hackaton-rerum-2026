@@ -5,7 +5,13 @@ from __future__ import annotations
 import streamlit as st
 
 from interface import formulario as fm
-from interface.estilo import aplicar_estilo, cabecalho, etapas
+from interface.estilo import (
+    ICONE_APP,
+    NOME_APP,
+    aplicar_estilo,
+    cabecalho,
+    etapas,
+)
 from interface.resultado import renderizar_mock, renderizar_revisao
 from motor.inferencia import perguntas_pendentes
 from motor.memoria import Memoria
@@ -61,7 +67,7 @@ def _navegacao(atual: int, ultima: int) -> None:
 
 
 def main() -> None:
-    st.set_page_config(page_title="Datalac", page_icon="📊", layout="wide")
+    st.set_page_config(page_title=NOME_APP, page_icon=ICONE_APP, layout="wide")
     aplicar_estilo()
     fm.iniciar_estado()
     cabecalho()
