@@ -1,4 +1,4 @@
-# hackaton-rerun-2026
+# hackaton-rerum-2026
 
 Sistema especialista de diagnóstico econômico da atividade leiteira: Hackathon UFJF 2026, tema T3 (Economia).
 A decisão vem de uma base de conhecimento explícita e de um motor de inferência próprio; nenhuma LLM roda no app.
@@ -9,8 +9,8 @@ Requer Python 3.11 ou mais novo. Tudo roda em localhost, sem internet.
 ### Instalação padrão
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/davigrossis/hackaton-rerun-2026.git
-cd hackaton-rerun-2026
+git clone https://github.com/davigrossis/hackaton-rerum-2026.git
+cd hackaton-rerum-2026
 
 # 2. Crie e ative o ambiente virtual
 python3 -m venv .venv
