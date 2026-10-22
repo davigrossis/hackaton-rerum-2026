@@ -29,6 +29,7 @@ pytest tests/test_validacao.py -v          # validação de entradas
 | `test_mercado.py` | **a saída**: o que `fatos_mercado` devolve | "O sistema calcula os fatos certos?" |
 | `test_catalogo_mercado.py` | **a entrada**: o catálogo `conhecimento/mercado.yaml` e o script de rascunho | "O sistema está lendo os produtos certos da base?" |
 | `test_benchmark.py` | o snapshot da PPM/IBGE, a média da UF (`fatos_benchmark`) e a R-IND-11 no caso 05, com a rede bloqueada | "A comparação com o IBGE funciona offline e dispara quando deve?" |
+| `test_offline.py` | execução 100% offline (#21): bloqueio de rede externa no pytest, diagnóstico de todos os casos conhecidos, mercado CONAB, benchmark IBGE e app Streamlit | "O sistema roda completamente isolado da internet sem falhas?" |
 
 Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - **id trocado no catálogo** (4744, soja, no lugar de 4742, milho): só o `test_catalogo_mercado.py` pega;
@@ -113,6 +114,12 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - O snapshot da PPM tem a variável, a unidade e o produto certos e as 27 UFs, e a tabela `CODIGO_UF` cobre as UFs do formulário;
 - a média de MG bate com a conta à mão (`10.070.127 × 1.000 ÷ 2.963.271 ÷ 365`), em L/vaca/dia, do último ano antes do mês; UF sem dado, símbolo do SIDRA (`...`, `-`) e vacas zeradas não geram fato;
 - critérios de aceite da #18: com a rede bloqueada, o caso 05 dispara a R-IND-11 (7,78 < 9,3105 L/vaca/dia) com CF 1,0.
+
+### `test_offline.py` (#21)
+- Intercepta chamadas de conexão de rede (`socket.socket.connect`), permitindo exclusivamente loopback local (`127.0.0.1`, `localhost`, `::1`);
+- Executa o diagnóstico completo de todos os 5 casos conhecidos em `dados/casos/` comprovando funcionamento sem internet;
+- Testa consultas ao catálogo CONAB e benchmark IBGE para múltiplas UFs em ambiente desconectado;
+- Executa inicialização e navegação de páginas no app Streamlit com a rede externa bloqueada, assegurando que o sistema não gera exceções nem dependências de recursos externos em runtime.
 
 ## Quando um teste falhar
 - **Depois de trocar a base da CONAB:** o `test_catalogo_mercado.py` aponta id que mudou de nome e valor fora da faixa, com UF, mês e valor. Se o preço for real, alargue a faixa no `mercado.yaml`.
