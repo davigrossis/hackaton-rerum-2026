@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from dominio.benchmark import fatos_benchmark
 from dominio.mercado import fatos_mercado
 from motor.inferencia import inferir, perguntas_pendentes
 from motor.memoria import Memoria
@@ -30,8 +31,8 @@ def test_base_exemplo_carrega():
 
 def test_base_real_carrega():
     base = carregar_base(PASTA_CONHECIMENTO)
-    assert base.versao == "1.0"
-    assert len(base.regras) == 30
+    assert base.versao == "1.1"
+    assert len(base.regras) == 31
     assert len(base.perguntas) == 22
     assert len(base.secoes) == 6
     assert "preco_leite_uf" in base.variaveis
@@ -82,7 +83,7 @@ def test_todas_calculadas_tem_entradas_validas():
 def test_externas_batem_com_fatos_mercado():
     base = carregar_base(PASTA_CONHECIMENTO)
     externas = {nome: v for nome, v in base.variaveis.items() if v.grupo == "externas"}
-    fatos = fatos_mercado("MG")
+    fatos = {**fatos_mercado("MG"), **fatos_benchmark("MG", 2026)}
     assert set(externas.keys()) == set(fatos.keys())
     for nome, fato in fatos.items():
         assert externas[nome].unidade == fato["unidade"]
@@ -446,7 +447,7 @@ def test_motor_nao_importa_dominio():
 
 def test_interface_so_usa_a_api_do_motor():
     # Critério da #10: a interface chega ao domínio só pelo diagnosticar e não lê YAML.
-    proibidos = ("dominio.indicadores", "dominio.mercado", "yaml")
+    proibidos = ("dominio.indicadores", "dominio.mercado", "dominio.benchmark", "yaml")
     for py_file in [RAIZ / "app.py", *(RAIZ / "interface").glob("*.py")]:
         tree = ast.parse(py_file.read_text(encoding="utf-8"), filename=str(py_file))
         for node in ast.walk(tree):

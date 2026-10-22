@@ -1,0 +1,79 @@
+# Caso 5: Fazenda com lucro e produtividade por vaca abaixo da média de MG no IBGE (#18).
+# Contas feitas à mão (todas conferidas em 2 casas decimais):
+#   produtividade_regional_ibge = 10070127 * 1000 / 2963271 / 365 = 9.3105 (PPM 2025, MG)
+#   litros_vaca_dia = 7000 / (30 * 30) = 7.78 < 9.3105 -> R-IND-11 (e < 10 -> R-IND-03)
+#   receita_total = 7000 * 3.10 + 300 = 22000.00
+#   coe = (3000 + 2000 + 300) + 2000 + 400 + 500 + 300 = 8500.00
+#   cot = 8500 + 1000 + 2000 = 11500.00
+#   ct = 11500 + 200000 * 0.005 = 12500.00
+#   lucro = 22000 - 12500 = 9500.00
+#   Enquadramento Matsunaga (1976): Receita (22000) >= CT (12500) -> lucro
+# Com lucro não há causa: a comparação com o IBGE não cria causa nem recomendação.
+id: benchmark_ibge
+nome: "Caso 5 — Produtividade abaixo da média de MG (IBGE)"
+descricao: >
+  Fazenda em MG, com lucro em 09/2026. A produtividade por vaca em lactação no mês
+  fica abaixo da média estadual da PPM de 2025. A comparação é aproximada: um mês
+  não mede o ano, e vacas em lactação no mês não equivalem às vacas ordenhadas no ano.
+
+entradas:
+  uf: MG
+  mes_referencia: "09/2026"
+  vacas_lactacao: 30
+  vacas_secas: 5
+  producao_litros: 7000.0
+  preco_leite_fazenda: 3.10
+  outras_receitas: 300.0
+  custo_concentrado: 3000.0
+  concentrado_kg: 2000.0
+  custo_volumoso: 2000.0
+  custo_mineral: 300.0
+  custo_mao_obra_contratada: 2000.0
+  custo_sanidade_reproducao: 400.0
+  custo_energia_combustivel: 500.0
+  custo_outros: 300.0
+  depreciacao: 1000.0
+  pro_labore: 2000.0
+  capital_investido: 200000.0
+  area_ha: 20.0
+  pessoas: 1.0
+  ccs: 300.0
+  cpp: 90.0
+
+esperado:
+  externos:
+    preco_leite_uf: 3.04
+    preco_leite_uf_media_12m: 2.5642
+    preco_milho_uf: 1.07
+    preco_diesel_uf: 6.69
+    troca_leite_milho_uf: 2.8411
+    troca_leite_milho_uf_media_12m: 2.5713
+    produtividade_regional_ibge: 9.3105
+  indicadores:
+    receita_leite: 21700.00
+    receita_total: 22000.00
+    custo_alimentar: 5300.00
+    coe: 8500.00
+    cot: 11500.00
+    remuneracao_capital: 1000.00
+    ct: 12500.00
+    coe_por_litro: 1.21
+    cot_por_litro: 1.64
+    ct_por_litro: 1.79
+    margem_bruta: 13500.00
+    margem_liquida: 10500.00
+    lucro: 9500.00
+    pct_vacas_lactacao: 85.71
+    litros_vaca_dia: 7.78
+    pct_alimentacao_coe: 62.35
+    pct_concentrado_receita: 13.64
+    litros_ha: 350.00
+    litros_dia_homem: 233.33
+    preco_concentrado_kg: 1.50
+    preco_leite_relativo_uf: 1.02
+  situacao_economica: lucro
+  indicadores_concluidos:
+    produtividade_nivel: baixa
+    produtividade_regional_nivel: abaixo_media
+  causas: []
+  recomendacoes: [manter_controle_e_avaliar_expansao]

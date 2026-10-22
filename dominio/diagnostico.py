@@ -6,6 +6,7 @@ import math
 import re
 from typing import Any
 
+from dominio.benchmark import fatos_benchmark
 from dominio.indicadores import calcular_indicadores
 from dominio.mercado import fatos_mercado
 from motor.inferencia import Resultado, inferir
@@ -86,11 +87,12 @@ def _periodo(texto: str) -> tuple[int, int]:
 
 
 def _mercado(respostas: dict[str, Any]) -> dict[str, dict]:
-    """Sem UF ou mês, não há fatos de mercado; não se chuta o último mês."""
+    """Sem UF ou mês, não há fatos externos (CONAB e IBGE); não se chuta o último mês."""
     uf, mes = respostas.get("uf"), respostas.get("mes_referencia")
     if uf is None or mes is None:
         return {}
-    return fatos_mercado(str(uf), _periodo(str(mes)))
+    periodo = _periodo(str(mes))
+    return {**fatos_mercado(str(uf), periodo), **fatos_benchmark(str(uf), periodo[0])}
 
 
 def _executar(
