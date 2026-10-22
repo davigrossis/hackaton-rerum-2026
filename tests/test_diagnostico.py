@@ -222,6 +222,52 @@ def test_quatro_casos_renderizam_parecer_sem_erro(nome_arquivo):
     assert "Snapshot CONAB de 20/10/2026" in tela
 
 
+def _gerar_sem_ccs_e_cpp() -> AppTest:
+    """Fazenda-exemplo com CCS e CPP vazios: opcionais que destravam a R-IND-08 e a R-IND-09."""
+    app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
+    _clicar(app.sidebar.button, "Carregar fazenda-exemplo")
+    for _ in carregar_base().secoes[:-1]:
+        _clicar(app.button, "Avançar")
+    for chave in ("resposta_ccs", "resposta_cpp"):
+        next(n for n in app.number_input if n.key == chave).set_value(None).run()
+    _clicar(app.button, "Avançar")
+    _clicar(app.button, "Gerar diagnóstico")
+    return app
+
+
+def test_pendencias_aparecem_uma_vez_e_continuar_mostra_o_parecer():
+    """#22: continuar sem preencher o opcional voltava ao mesmo diálogo, sem fim."""
+    app = _gerar_sem_ccs_e_cpp()
+    assert "O motor precisa de mais um dado" in [s.value for s in app.subheader]
+
+    _clicar(app.button, "Continuar diagnóstico")
+
+    assert not app.exception
+    subheaders = [s.value for s in app.subheader]
+    assert "O motor precisa de mais um dado" not in subheaders
+    assert "Diagnóstico Econômico" in subheaders
+    memoria = app.session_state[CHAVE_RESULTADO].memoria
+    assert not memoria.tem("ccs") and not memoria.tem("cpp")  # vazio não vira zero
+
+    # Um diagnóstico novo pergunta de novo, uma vez.
+    _clicar(app.button, "Editar respostas")
+    _clicar(app.button, "Gerar diagnóstico")
+    assert "O motor precisa de mais um dado" in [s.value for s in app.subheader]
+
+
+def test_pendencia_preenchida_no_dialogo_entra_no_parecer():
+    app = _gerar_sem_ccs_e_cpp()
+    next(n for n in app.number_input if n.key == "resposta_ccs").set_value(650.0).run()
+
+    _clicar(app.button, "Continuar diagnóstico")
+
+    assert not app.exception
+    assert "Diagnóstico Econômico" in [s.value for s in app.subheader]
+    memoria = app.session_state[CHAVE_RESULTADO].memoria
+    assert memoria.valor("ccs").valor == 650.0
+    assert memoria.valor("qualidade_leite").valor == "fora_in76"
+
+
 def test_como_e_memoria_aparecem_no_parecer():
     app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
     _clicar(app.sidebar.button, "Carregar fazenda-exemplo")

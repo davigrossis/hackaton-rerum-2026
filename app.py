@@ -21,6 +21,7 @@ from motor.memoria import Memoria
 from motor.regras import Base, carregar_base
 
 CHAVE_ERRO = "erro_diagnostico"
+CHAVE_PENDENCIAS_VISTAS = "pendencias_vistas"
 
 
 @st.cache_resource
@@ -40,10 +41,19 @@ def _ir_para_com_navegacao(etapa: int) -> None:
     _ir_para(etapa)
 
 
-def _gerar(respostas: dict, estimados: frozenset[str] = frozenset()) -> None:
-    """Revalida respostas e deixa erros explícitos na tela."""
+def _gerar(
+    respostas: dict,
+    estimados: frozenset[str] = frozenset(),
+    pendencias_vistas: bool = False,
+) -> None:
+    """Revalida respostas e deixa erros explícitos na tela.
+
+    Com `pendencias_vistas`, o parecer sai mesmo com opcional vazio: o diálogo de
+    pendências aparece uma vez por diagnóstico, e não de novo a cada "Continuar".
+    """
     st.session_state[fm.CHAVE_RESULTADO] = None
     st.session_state[CHAVE_ERRO] = None
+    st.session_state[CHAVE_PENDENCIAS_VISTAS] = pendencias_vistas
     base = obter_base()
     erros = validar_respostas(respostas, base.perguntas)
     if erros:
@@ -113,7 +123,7 @@ def _dialogo_pendencias(
 
     fm.sincronizar_respostas(perguntas)
     if st.button("Continuar diagnóstico", type="primary"):
-        _gerar(fm.coletar_respostas(), fm.coletar_estimados())
+        _gerar(fm.coletar_respostas(), fm.coletar_estimados(), pendencias_vistas=True)
         st.rerun()
 
 
@@ -143,7 +153,7 @@ def main() -> None:
     resultado = st.session_state[fm.CHAVE_RESULTADO]
     if resultado is not None:
         pendentes = perguntas_pendentes(base, resultado.memoria, resultado)
-        if pendentes:
+        if pendentes and not st.session_state.get(CHAVE_PENDENCIAS_VISTAS):
             _dialogo_pendencias(base, resultado, pendentes)
             return
         renderizar_parecer(resultado, base)
