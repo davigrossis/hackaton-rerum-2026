@@ -1,0 +1,110 @@
+# Fazenda inventada A (#22, rodada de bugs cruzada): alta produção, médio prazo e mastite.
+# Cobre o que os 5 casos conhecidos não disparam ponta a ponta: o par geral × exceção
+# (R-IND-06 vence a R-IND-05) e a CCS fora da IN 76 (R-IND-08, R-CAU-06, R-REC-06, R-REC-07).
+# Contas feitas à mão (todas conferidas em 2 casas decimais):
+#   Mercado PR 09/2026 (dados/raw/PrecosMensalUF.txt, lido à parte com pandas):
+#     preco_leite_uf = 2.81; preco_milho_uf = 0.98; preco_diesel_uf = 7.28
+#     preco_leite_uf_media_12m = (2.58 + 2.53 + 2.34 + 2.28 + 2.15 + 2.16 + 2.17
+#                                 + 2.52 + 2.60 + 2.60 + 2.76 + 2.81) / 12 = 2.4583
+#     troca_leite_milho_uf = 2.81 / 0.98 = 2.8673 (> média de 12 meses: R-IND-07 não dispara)
+#   IBGE PR, PPM 2025: 4800868 * 1000 / 1117187 / 365 = 11.7734 L/vaca/dia
+#   receita_leite = 51300 * 2.85 = 146205.00
+#   receita_total = 146205 + 3795 = 150000.00
+#   custo_alimentar = 52000 + 30000 + 4000 = 86000.00
+#   coe = 86000 + 15000 + 6000 + 5000 + 4000 = 116000.00
+#   cot = 116000 + 12000 + 10000 = 138000.00
+#   remuneracao_capital = 3000000 * 0.005 = 15000.00
+#   ct = 138000 + 15000 = 153000.00
+#   coe_por_litro = 116000 / 51300 = 2.26
+#   cot_por_litro = 138000 / 51300 = 2.69
+#   ct_por_litro = 153000 / 51300 = 2.98
+#   margem_bruta = 150000 - 116000 = 34000.00
+#   margem_liquida = 150000 - 138000 = 12000.00
+#   lucro = 150000 - 153000 = -3000.00
+#   Enquadramento Matsunaga (1976): COT (138000) <= Receita (150000) < CT (153000) -> medio_prazo
+#   pct_vacas_lactacao = 60 / 72 * 100 = 83.33%
+#   litros_vaca_dia = 51300 / (60 * 30) = 28.50 (> 25: exceção R-IND-06; > 11.77 do IBGE)
+#   pct_alimentacao_coe = 86000 / 116000 * 100 = 74.14% (> 65: R-IND-05 e R-IND-06 em conflito)
+#   pct_concentrado_receita = 52000 / 150000 * 100 = 34.67% (< 40: sem R-IND-04)
+#   litros_ha = 51300 / 80 = 641.25
+#   litros_dia_homem = 51300 / 30 / 5 = 342.00 (>= 150: sem R-IND-10)
+#   preco_concentrado_kg = 52000 / 26000 = 2.00
+#   preco_leite_relativo_uf = 2.85 / 2.81 = 1.01 (acima da UF: sem R-IND-01)
+#   CF: R-IND-06 = 0.8; R-CAU-06 = 0.7 * 1.0 = 0.70;
+#       R-REC-06 = 0.8 * 0.7 = 0.56; R-REC-07 = 0.8 * min(0.7, 1.0) = 0.56
+# Médio prazo sem causa econômica: o custo alimentar é "adequado" pela exceção, e a única
+# causa é a qualidade, que vale em qualquer situação.
+id: alta_producao_mastite
+nome: "Fazenda A — Alta produção com mastite (PR)"
+descricao: >
+  Fazenda no PR em 09/2026, 60 vacas em lactação a 28,5 L/vaca/dia. A alimentação pesa
+  74% do COE, mas a produtividade justifica (exceção R-IND-06). Cobre o COT e não o CT
+  (médio prazo). A CCS de 650 mil CS/mL passa do limite da IN 76.
+
+entradas:
+  uf: PR
+  mes_referencia: "09/2026"
+  vacas_lactacao: 60
+  vacas_secas: 12
+  producao_litros: 51300.0
+  preco_leite_fazenda: 2.85
+  outras_receitas: 3795.0
+  custo_concentrado: 52000.0
+  concentrado_kg: 26000.0
+  custo_volumoso: 30000.0
+  custo_mineral: 4000.0
+  custo_mao_obra_contratada: 15000.0
+  custo_sanidade_reproducao: 6000.0
+  custo_energia_combustivel: 5000.0
+  custo_outros: 4000.0
+  depreciacao: 12000.0
+  pro_labore: 10000.0
+  capital_investido: 3000000.0
+  area_ha: 80.0
+  pessoas: 5.0
+  ccs: 650.0
+  cpp: 120.0
+
+esperado:
+  externos:
+    preco_leite_uf: 2.81
+    preco_leite_uf_media_12m: 2.4583
+    preco_milho_uf: 0.98
+    preco_diesel_uf: 7.28
+    troca_leite_milho_uf: 2.8673
+    troca_leite_milho_uf_media_12m: 2.6959
+    produtividade_regional_ibge: 11.7734
+  indicadores:
+    receita_leite: 146205.00
+    receita_total: 150000.00
+    custo_alimentar: 86000.00
+    coe: 116000.00
+    cot: 138000.00
+    remuneracao_capital: 15000.00
+    ct: 153000.00
+    coe_por_litro: 2.26
+    cot_por_litro: 2.69
+    ct_por_litro: 2.98
+    margem_bruta: 34000.00
+    margem_liquida: 12000.00
+    lucro: -3000.00
+    pct_vacas_lactacao: 83.33
+    litros_vaca_dia: 28.50
+    pct_alimentacao_coe: 74.14
+    pct_concentrado_receita: 34.67
+    litros_ha: 641.25
+    litros_dia_homem: 342.00
+    preco_concentrado_kg: 2.00
+    preco_leite_relativo_uf: 1.01
+  indicadores_ausentes: []
+  situacao_economica: medio_prazo
+  indicadores_concluidos:
+    custo_alimentar_nivel: {valor: adequado, cf: 0.8}
+    qualidade_leite: {valor: fora_in76, cf: 1.0}
+  bloqueadas:
+    R-IND-06: [R-IND-05]
+  causas:
+    qualidade_leite: 0.7
+  recomendacoes:
+    melhorar_higiene_ordenha: 0.56
+    controlar_mastite: 0.56

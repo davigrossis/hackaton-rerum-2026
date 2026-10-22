@@ -1,0 +1,119 @@
+# Fazenda inventada B (#22, rodada de bugs cruzada): familiar, em GO, com prejuízo.
+# Cobre o que os 5 casos conhecidos não disparam ponta a ponta: troca leite:milho
+# desfavorável (R-IND-07, R-REC-03), produtividade baixa (R-CAU-05, R-REC-04), CPP fora
+# da IN 76 sem CCS alta (R-IND-09, R-REC-06 sem R-REC-07) e duas recomendações iguais que
+# combinam o CF. Deixa opcionais vazios (outras receitas, kg de concentrado, outros custos,
+# capital e área) e informa zero explícito na mão de obra contratada.
+# Contas feitas à mão (todas conferidas em 2 casas decimais):
+#   Mercado GO 01/2026 (dados/raw/PrecosMensalUF.txt, lido à parte com pandas; a base
+#   começa em 10/2025, então a janela de 12 meses tem 4):
+#     preco_leite_uf = 1.78; preco_milho_uf = 0.87
+#     preco_diesel_uf = 5.95 (sem cotação em 01/2026: usa a de 11/2025)
+#     preco_leite_uf_media_12m = (2.49 + 2.23 + 2.01 + 1.78) / 4 = 2.1275
+#     troca_leite_milho_uf = 1.78 / 0.87 = 2.0460
+#     troca_leite_milho_uf_media_12m = (2.49/0.88 + 2.23/0.92 + 2.01/0.95 + 1.78/0.87) / 4 = 2.3538
+#     2.0460 < 2.3538 -> R-IND-07 (desfavorável)
+#   IBGE GO, PPM 2025: 2906910 * 1000 / 1373906 / 365 = 5.7967 L/vaca/dia
+#   receita_leite = 3150 * 1.85 = 5827.50
+#   receita_total = 5827.50 (outras receitas não informadas: não vira zero)
+#   custo_alimentar = 3000 + 1800 + 300 = 5100.00
+#   coe = 5100 + 0 + 400 + 500 = 6000.00 (outros custos não informados)
+#   cot = 6000 + 600 + 1500 = 8100.00
+#   sem capital_investido: não há remuneracao_capital, ct, ct_por_litro nem lucro
+#   coe_por_litro = 6000 / 3150 = 1.90
+#   cot_por_litro = 8100 / 3150 = 2.57
+#   margem_bruta = 5827.50 - 6000 = -172.50
+#   margem_liquida = 5827.50 - 8100 = -2272.50
+#   Enquadramento Matsunaga (1976): Receita (5827.50) < COE (6000) -> prejuizo (não precisa de CT)
+#   pct_vacas_lactacao = 12 / 15 * 100 = 80.00% (sem R-IND-02)
+#   litros_vaca_dia = 3150 / (12 * 30) = 8.75 (< 10: R-IND-03; > 5.80 do IBGE: sem R-IND-11)
+#   pct_alimentacao_coe = 5100 / 6000 * 100 = 85.00% (> 65 e só 8,75 L: R-IND-05)
+#   pct_concentrado_receita = 3000 / 5827.50 * 100 = 51.48% (> 40: R-IND-04)
+#   litros_dia_homem = 3150 / 30 / 2 = 52.50 (< 150: R-IND-10)
+#   preco_leite_relativo_uf = 1.85 / 1.78 = 1.04 (acima da UF: sem R-IND-01)
+#   CF das causas: custo_alimentar_alto = 0.8 + 0.7 * (1 - 0.8) = 0.94 (R-CAU-02 e R-CAU-03);
+#     produtividade_baixa = 0.6; escala_baixa = 0.7; qualidade_leite = 0.7
+#   CF das recomendações:
+#     planejar_compra_de_insumos = 0.7 * min(0.94, 1.0) = 0.658
+#     revisar_dieta_com_nutricionista: R-REC-02 = 0.8 * 0.94 = 0.752; R-REC-04 = 0.7 * 0.6 = 0.42
+#       combinadas: 0.752 + 0.42 * (1 - 0.752) = 0.85616 -> 0.8562 (a memória guarda CF com 4 casas)
+#     melhorar_higiene_ordenha = 0.8 * 0.7 = 0.56 (CCS 350 < 500: sem controlar_mastite)
+#     avaliar_escala = 0.7 * 0.7 = 0.49
+id: familiar_prejuizo
+nome: "Fazenda B — Familiar com prejuízo (GO)"
+descricao: >
+  Fazenda familiar em GO em 01/2026, 12 vacas em lactação a 8,75 L/vaca/dia, sem mão de
+  obra contratada. A receita não cobre o COE (prejuízo): a alimentação pesa 85% do COE e o
+  concentrado leva 51% da receita, num mês de troca leite:milho desfavorável. A CPP de
+  450 mil UFC/mL passa do limite da IN 76.
+
+entradas:
+  uf: GO
+  mes_referencia: "01/2026"
+  vacas_lactacao: 12
+  vacas_secas: 3
+  producao_litros: 3150.0
+  preco_leite_fazenda: 1.85
+  custo_concentrado: 3000.0
+  custo_volumoso: 1800.0
+  custo_mineral: 300.0
+  custo_mao_obra_contratada: 0.0
+  custo_sanidade_reproducao: 400.0
+  custo_energia_combustivel: 500.0
+  depreciacao: 600.0
+  pro_labore: 1500.0
+  pessoas: 2.0
+  ccs: 350.0
+  cpp: 450.0
+
+esperado:
+  externos:
+    preco_leite_uf: 1.78
+    preco_leite_uf_media_12m: 2.1275
+    preco_milho_uf: 0.87
+    preco_diesel_uf: 5.95
+    troca_leite_milho_uf: 2.0460
+    troca_leite_milho_uf_media_12m: 2.3538
+    produtividade_regional_ibge: 5.7967
+  indicadores:
+    receita_leite: 5827.50
+    receita_total: 5827.50
+    custo_alimentar: 5100.00
+    coe: 6000.00
+    cot: 8100.00
+    coe_por_litro: 1.90
+    cot_por_litro: 2.57
+    margem_bruta: -172.50
+    margem_liquida: -2272.50
+    pct_vacas_lactacao: 80.00
+    litros_vaca_dia: 8.75
+    pct_alimentacao_coe: 85.00
+    pct_concentrado_receita: 51.48
+    litros_dia_homem: 52.50
+    preco_leite_relativo_uf: 1.04
+  indicadores_ausentes:
+    - remuneracao_capital
+    - ct
+    - ct_por_litro
+    - lucro
+    - litros_ha
+    - preco_concentrado_kg
+  situacao_economica: prejuizo
+  indicadores_concluidos:
+    produtividade_nivel: {valor: baixa, cf: 1.0}
+    concentrado_receita_nivel: {valor: alto, cf: 1.0}
+    custo_alimentar_nivel: {valor: alto, cf: 1.0}
+    troca_leite_milho_nivel: {valor: desfavoravel, cf: 1.0}
+    qualidade_leite: {valor: fora_in76, cf: 1.0}
+    mao_obra_nivel: {valor: baixa, cf: 1.0}
+  bloqueadas: {}
+  causas:
+    custo_alimentar_alto: 0.94
+    produtividade_baixa: 0.6
+    escala_baixa: 0.7
+    qualidade_leite: 0.7
+  recomendacoes:
+    planejar_compra_de_insumos: 0.658
+    revisar_dieta_com_nutricionista: 0.8562
+    melhorar_higiene_ordenha: 0.56
+    avaliar_escala: 0.49
