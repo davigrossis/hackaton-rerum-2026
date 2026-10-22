@@ -6,6 +6,8 @@ import streamlit as st
 
 VERDE = "#2e6b4a"
 FENO = "#8f7a2e"
+NOME_APP = "Datalac"
+ICONE_APP = "📊"
 
 CSS = f"""
 <style>
@@ -50,7 +52,7 @@ def aplicar_estilo() -> None:
 def cabecalho() -> None:
     st.markdown(
         '<div class="el-topo">'
-        '<div class="el-titulo">📊 Datalac</div>'
+        f'<div class="el-titulo">{ICONE_APP} {NOME_APP}</div>'
         '<div class="el-sub">Descubra se a sua atividade leiteira está pagando '
         "os custos. Informe os dados de um mês e receba um parecer explicado."
         "</div></div>",

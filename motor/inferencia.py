@@ -52,6 +52,7 @@ class Ciclo:
     camada: str
     conjunto_conflito: tuple[str, ...]  # ids na ordem da resolução
     escolhida: str
+    regra: Regra
     premissas: tuple[PremissaAvaliada, ...]
     fato: str
     valor: Any
@@ -164,6 +165,7 @@ def inferir(base: Base, memoria: Memoria) -> Resultado:
                     camada=camada,
                     conjunto_conflito=tuple(r.id for r, _ in conjunto),
                     escolhida=regra.id,
+                    regra=regra,
                     premissas=tuple(premissas),
                     fato=regra.fato,
                     valor=regra.valor,
