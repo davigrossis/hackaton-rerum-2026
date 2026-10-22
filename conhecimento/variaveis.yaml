@@ -1,6 +1,6 @@
 # Variáveis que não são perguntas: calculadas, externas e conclusões.
 # Formato completo e documentação em docs/contratos.md e docs/dominio.md.
-versao: "0.1"
+versao: "1.0"
 
 calculadas:
   # Faturamento
@@ -54,7 +54,7 @@ calculadas:
     unidade: R$
     formula: capital_investido * 0.005
     entradas: [capital_investido]
-    fonte: PENDENTE
+    fonte: "Matsunaga et al. (1976) / CEPEA: taxa de juros de oportunidade do capital de 6% a.a. (0,5% a.m.)"
 
   - nome: ct
     descricao: Custo Total (COT somado à remuneração do capital investido)

@@ -119,9 +119,7 @@ def test_app_base_de_conhecimento_lista_todas_as_regras():
 
     assert not app.exception
     tela = " ".join(m.value for m in app.markdown)
-    assert f"Versão {carregar_base().versao}" in " ".join(
-        c.value for c in app.caption
-    )
+    assert f"Versão {carregar_base().versao}" in " ".join(c.value for c in app.caption)
     assert all(regra.id in tela for regra in carregar_base().regras)
     assert all(regra.fonte in tela for regra in carregar_base().regras)
 

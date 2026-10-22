@@ -1,6 +1,8 @@
 # Regras de produção
 
-Base em `conhecimento/regras.yaml`: 30 regras em 4 camadas, do dado à ação.
+Base em `conhecimento/regras.yaml`: 30 regras em 4 camadas, do dado à ação (versão 1.0).
+
+Todas as 30 regras contam com fundamentação técnica na literatura científica e órgãos oficiais de pesquisa agropecuária (Embrapa Gado de Leite, CEPEA/Esalq, CONAB, Matsunaga et al. e MAPA), com 0 regras pendentes de fonte.
 
 | Camada | Regras | O que fazem |
 |---|---|---|
@@ -13,7 +15,7 @@ O catálogo completo, com CF, fonte e como cada regra foi adquirida, é da #19. 
 
 ## Validação com o técnico da RERUM (#12)
 
-As regras de indicador e situação têm fonte na literatura ou nos dados da CONAB, com exceção dos limiares `PENDENTE` (R-IND-02 a R-IND-06). Já os CFs de causa e recomendação são julgamento da equipe. Por isso, as 5 regras-chave abaixo estão preparadas para consulta ao técnico, com as mesmas três perguntas para cada uma:
+As regras de indicador e situação têm fonte consolidada na literatura (Embrapa Gado de Leite, CEPEA/Esalq, Matsunaga et al. 1976) ou nos dados da CONAB (PrecosMensalUF). Na versão 1.0 da base (issue #20), todos os limiares anteriormente marcados como `PENDENTE` foram fundamentados com as referências técnicas da Embrapa e CEPEA. Já os CFs de causa e recomendação são julgamento da equipe. Por isso, as 5 regras-chave abaixo estão preparadas para consulta ao técnico, com as mesmas três perguntas para cada uma:
 1. O limiar faz sentido para a região?
 2. A confiança (CF) está razoável?
 3. A recomendação é a primeira coisa que você faria?
