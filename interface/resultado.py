@@ -451,7 +451,9 @@ def _renderizar_no_como(no: NoComo, base: Base, nivel: int = 0) -> None:
                 f"{indent}  - **Conflito resolvido contra**: {', '.join(no.conflitos)}"
             )
         if no.bloqueios:
-            bloq_str = ", ".join(f"{b.regra} ({b.valor})" for b in no.bloqueios)
+            bloq_str = ", ".join(
+                f"{b.regra} ({b.valor_pretendido})" for b in no.bloqueios
+            )
             st.markdown(f"{indent}  - **Regras gerais bloqueadas**: {bloq_str}")
     else:
         orig = no.origem
