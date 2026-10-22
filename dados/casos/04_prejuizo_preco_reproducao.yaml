@@ -1,0 +1,104 @@
+# Caso 4: Fazenda em prejuízo (Receita Total < COE) por preço baixo + reprodução ruim.
+# Contas feitas à mão (todas conferidas em 2 casas decimais):
+#   receita_leite = 9000 * 2.50 = 22500.00
+#   receita_total = 22500.00 + 0.00 = 22500.00
+#   custo_alimentar = 6300 + 9500 + 1200 = 17000.00
+#   coe = 17000 + 7500 + 2000 + 2000 + 1500 = 30000.00
+#   cot = 30000 + 4000 + 5000 = 39000.00
+#   remuneracao_capital = 800000 * 0.005 = 4000.00
+#   ct = 39000 + 4000 = 43000.00
+#   coe_por_litro = 30000 / 9000 = 3.33
+#   cot_por_litro = 39000 / 9000 = 4.33
+#   ct_por_litro = 43000 / 9000 = 4.78
+#   margem_bruta = 22500 - 30000 = -7500.00
+#   margem_liquida = 22500 - 39000 = -16500.00
+#   lucro = 22500 - 43000 = -20500.00
+#   Enquadramento Matsunaga (1976): Receita (22500) < COE (30000) -> prejuizo
+#   Causas combinadas diagnosticadas:
+#     1) Preço baixo: preco_leite_fazenda (R$ 2.50/L) < preco_leite_uf (R$ 3.04/L)
+#        preco_leite_relativo_uf = 2.50 / 3.04 = 0.82 (17.8% abaixo da média estadual CONAB)
+#     2) Falha reprodutiva grave: 30 vacas em lactação de um rebanho total de 50
+#        pct_vacas_lactacao = (30 / 50) * 100 = 60.00% (alerta severo < 70-75%)
+#        litros_vaca_dia = 9000 / (30 * 30) = 10.00 L/dia
+#   Outros indicadores:
+#   pct_alimentacao_coe = (17000 / 30000) * 100 = 56.67% (dentro de 40% a 65%)
+#   pct_concentrado_receita = (6300 / 22500) * 100 = 28.00% (< 30-35%)
+#   litros_ha = 9000 / 45 = 200.00 L/ha
+#   litros_dia_homem = (9000 / 30) / 3 = 100.00 L/dia-homem
+#   preco_concentrado_kg = 6300 / 4200 = 1.50 R$/kg
+id: prejuizo_preco_reproducao
+nome: "Caso 4 — Prejuízo por preço baixo e reprodução ruim"
+descricao: >
+  Propriedade em MG (09/2026) operando em prejuízo econômico e operacional imediato.
+  O rebanho sofre de grave ineficiência reprodutiva com apenas 30 vacas em lactação
+  e 20 secas (60,00% em lactação, com 40% do rebanho adulto improdutivo gerando custos
+  de manutenção). A produção é de 9.000 L/mês (10 L/vaca/dia) e o produtor recebe apenas
+  R$ 2,50/L (17,8% abaixo da cotação estadual CONAB de R$ 3,04/L). A receita bruta
+  (R$ 22.500) é insuficiente para cobrir sequer os desembolsos diretos do mês (COE = R$ 30.000,
+  margem bruta negativa de -R$ 7.500), fechando com prejuízo total de -R$ 20.500,00.
+
+entradas:
+  uf: MG
+  mes_referencia: "09/2026"
+  vacas_lactacao: 30
+  vacas_secas: 20
+  producao_litros: 9000.0
+  preco_leite_fazenda: 2.50
+  outras_receitas: 0.0
+  custo_concentrado: 6300.0
+  concentrado_kg: 4200.0
+  custo_volumoso: 9500.0
+  custo_mineral: 1200.0
+  custo_mao_obra_contratada: 7500.0
+  custo_sanidade_reproducao: 2000.0
+  custo_energia_combustivel: 2000.0
+  custo_outros: 1500.0
+  depreciacao: 4000.0
+  pro_labore: 5000.0
+  capital_investido: 800000.0
+  area_ha: 45.0
+  pessoas: 3.0
+  ccs: 300.0
+  cpp: 90.0
+
+esperado:
+  externos:
+    preco_leite_uf: 3.04
+    preco_leite_uf_media_12m: 2.5642
+    preco_milho_uf: 1.07
+    preco_diesel_uf: 6.69
+    troca_leite_milho_uf: 2.8411
+    troca_leite_milho_uf_media_12m: 2.5713
+  indicadores:
+    receita_leite: 22500.00
+    receita_total: 22500.00
+    custo_alimentar: 17000.00
+    coe: 30000.00
+    cot: 39000.00
+    remuneracao_capital: 4000.00
+    ct: 43000.00
+    coe_por_litro: 3.33
+    cot_por_litro: 4.33
+    ct_por_litro: 4.78
+    margem_bruta: -7500.00
+    margem_liquida: -16500.00
+    lucro: -20500.00
+    pct_vacas_lactacao: 60.00
+    litros_vaca_dia: 10.00
+    pct_alimentacao_coe: 56.67
+    pct_concentrado_receita: 28.00
+    litros_ha: 200.00
+    litros_dia_homem: 100.00
+    preco_concentrado_kg: 1.50
+    preco_leite_relativo_uf: 0.82
+  situacao_economica: prejuizo
+  indicadores_concluidos:
+    preco_leite: abaixo_mercado
+    lactacao_nivel: baixa
+    custo_alimentar_nivel: adequado
+  causas:
+    - preco_recebido_baixo
+    - rebanho_reproducao
+  recomendacoes:
+    - negociar_com_laticinio
+    - manejo_reprodutivo

@@ -1,0 +1,97 @@
+# Caso 1: Fazenda com lucro econômico (Receita Total >= Custo Total).
+# Contas feitas à mão (todas conferidas em 2 casas decimais):
+#   receita_leite = 30000 * 3.10 = 93000.00
+#   receita_total = 93000.00 + 2000.00 = 95000.00
+#   custo_alimentar = 21000 + 12000 + 2000 = 35000.00
+#   coe = 35000 + 14000 + 3000 + 5000 + 3000 = 60000.00
+#   cot = 60000 + 6000 + 8000 = 74000.00
+#   remuneracao_capital = 1600000 * 0.005 = 8000.00
+#   ct = 74000 + 8000 = 82000.00
+#   coe_por_litro = 60000 / 30000 = 2.00
+#   cot_por_litro = 74000 / 30000 = 2.47
+#   ct_por_litro = 82000 / 30000 = 2.73
+#   margem_bruta = 95000 - 60000 = 35000.00
+#   margem_liquida = 95000 - 74000 = 21000.00
+#   lucro = 95000 - 82000 = 13000.00
+#   Enquadramento Matsunaga (1976): Receita (95000) >= CT (82000) -> lucro
+#   Indicadores zootécnicos e de eficiência:
+#   pct_vacas_lactacao = (50 / 60) * 100 = 83.33% (ideal: 80% a 85%)
+#   litros_vaca_dia = 30000 / (50 * 30) = 20.00 L/dia
+#   pct_alimentacao_coe = (35000 / 60000) * 100 = 58.33% (faixa saudável: 40% a 65%)
+#   pct_concentrado_receita = (21000 / 95000) * 100 = 22.11% (ideal < 30% a 35%)
+#   litros_ha = 30000 / 60 = 500.00 L/ha
+#   litros_dia_homem = (30000 / 30) / 4 = 250.00 L/dia-homem
+#   preco_concentrado_kg = 21000 / 14000 = 1.50 R$/kg
+#   preco_leite_relativo_uf = 3.10 / 3.04 = 1.02 (acima da média da UF)
+id: lucro
+nome: "Caso 1 — Fazenda com lucro econômico"
+descricao: >
+  Propriedade eficiente em MG (09/2026) com rebanho de 50 vacas em lactação e 10 secas
+  (83,33% em lactação), produzindo 30.000 L/mês (20 L/vaca/dia) com boa bonificação
+  de preço (R$ 3,10/L contra média CONAB de R$ 3,04/L). Custos controlados com
+  alimentação absorvendo 58,33% do COE. A receita bruta (R$ 95.000) cobre o COE (R$ 60.000),
+  o COT (R$ 74.000) e a remuneração do capital investido (CT = R$ 82.000), gerando lucro
+  econômico positivo de R$ 13.000,00 no mês.
+
+entradas:
+  uf: MG
+  mes_referencia: "09/2026"
+  vacas_lactacao: 50
+  vacas_secas: 10
+  producao_litros: 30000.0
+  preco_leite_fazenda: 3.10
+  outras_receitas: 2000.0
+  custo_concentrado: 21000.0
+  concentrado_kg: 14000.0
+  custo_volumoso: 12000.0
+  custo_mineral: 2000.0
+  custo_mao_obra_contratada: 14000.0
+  custo_sanidade_reproducao: 3000.0
+  custo_energia_combustivel: 5000.0
+  custo_outros: 3000.0
+  depreciacao: 6000.0
+  pro_labore: 8000.0
+  capital_investido: 1600000.0
+  area_ha: 60.0
+  pessoas: 4.0
+  ccs: 220.0
+  cpp: 45.0
+
+esperado:
+  externos:
+    preco_leite_uf: 3.04
+    preco_leite_uf_media_12m: 2.5642
+    preco_milho_uf: 1.07
+    preco_diesel_uf: 6.69
+    troca_leite_milho_uf: 2.8411
+    troca_leite_milho_uf_media_12m: 2.5713
+  indicadores:
+    receita_leite: 93000.00
+    receita_total: 95000.00
+    custo_alimentar: 35000.00
+    coe: 60000.00
+    cot: 74000.00
+    remuneracao_capital: 8000.00
+    ct: 82000.00
+    coe_por_litro: 2.00
+    cot_por_litro: 2.47
+    ct_por_litro: 2.73
+    margem_bruta: 35000.00
+    margem_liquida: 21000.00
+    lucro: 13000.00
+    pct_vacas_lactacao: 83.33
+    litros_vaca_dia: 20.00
+    pct_alimentacao_coe: 58.33
+    pct_concentrado_receita: 22.11
+    litros_ha: 500.00
+    litros_dia_homem: 250.00
+    preco_concentrado_kg: 1.50
+    preco_leite_relativo_uf: 1.02
+  situacao_economica: lucro
+  indicadores_concluidos:
+    custo_alimentar_nivel: adequado
+    lactacao_nivel: adequada
+    qualidade_leite: dentro_in76
+  causas: []
+  recomendacoes:
+    - manter_controle_e_avaliar_expansao
