@@ -6,6 +6,7 @@ import streamlit as st
 
 from dominio.diagnostico import diagnosticar, validar_respostas
 from interface import formulario as fm
+from interface.conhecimento import renderizar_base
 from interface.estilo import (
     ICONE_APP,
     NOME_APP,
@@ -123,6 +124,15 @@ def main() -> None:
     cabecalho()
 
     base = obter_base()
+    pagina = st.sidebar.radio(
+        "Página",
+        ["Diagnóstico", "Base de conhecimento"],
+        label_visibility="collapsed",
+    )
+    if pagina == "Base de conhecimento":
+        renderizar_base(base)
+        return
+
     perguntas = perguntas_pendentes(base, Memoria())
     secoes = [(s, [p for p in perguntas if p.secao == s.id]) for s in base.secoes]
     secoes = [(s, ps) for s, ps in secoes if ps]

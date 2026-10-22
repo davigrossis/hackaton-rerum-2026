@@ -113,6 +113,19 @@ def test_fazenda_exemplo_gera_parecer_real_na_tela():
     assert "MOCK" not in tela
 
 
+def test_app_base_de_conhecimento_lista_todas_as_regras():
+    app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
+    app.sidebar.radio[0].set_value("Base de conhecimento").run()
+
+    assert not app.exception
+    tela = " ".join(m.value for m in app.markdown)
+    assert f"Versão {carregar_base().versao}" in " ".join(
+        c.value for c in app.caption
+    )
+    assert all(regra.id in tela for regra in carregar_base().regras)
+    assert all(regra.fonte in tela for regra in carregar_base().regras)
+
+
 def test_app_entrada_estimada_reduz_confianca_ponta_a_ponta():
     app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
     _clicar(app.sidebar.button, "Carregar fazenda-exemplo")
