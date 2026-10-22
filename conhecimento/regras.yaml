@@ -1,6 +1,6 @@
 # Base de conhecimento: regras de produção.
 # Formato completo e documentação em docs/contratos.md.
-versao: "1.0"
+versao: "1.1"
 regras:
   # Indicadores: comparam um número com um limiar ou com o mercado da UF.
   # Limiar sem fonte confiável fica com fonte "PENDENTE"; a origem dele vai no comentário.
@@ -114,6 +114,19 @@ regras:
     entao: {fato: mao_obra_nivel, valor: baixa}
     cf: 1.0
     fonte: "CEPEA/Esalq (2012), custos de produção de leite: mínimo 'ideal' de 150 L/homem/dia na ordenha manual e 300 na mecânica"
+
+  # Média da UF na PPM/IBGE (dominio/benchmark.py): mil L × 1.000 ÷ vacas ordenhadas ÷ 365,
+  # no último ano antes do mês. Aproximada: a fazenda informa um mês e vacas em lactação;
+  # a PPM mede o ano e as vacas ordenhadas.
+  - id: R-IND-11
+    descricao: Produtividade por vaca abaixo da média da UF na PPM/IBGE
+    camada: indicador
+    prioridade: 50
+    se:
+      - [litros_vaca_dia, "<", $produtividade_regional_ibge]
+    entao: {fato: produtividade_regional_nivel, valor: abaixo_media}
+    cf: 1.0
+    fonte: "IBGE – PPM, tabelas 74 e 94: produção de leite por vaca ordenhada na UF (comparação direta)"
 
   # Situação econômica: as 4 faixas de Matsunaga et al. (1976), sem sobreposição
   # (docs/dominio.md, seção 5). Sem capital investido não há CT: lucro e médio prazo

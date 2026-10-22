@@ -18,7 +18,7 @@ Este documento estabelece os contratos de dados, formatos YAML e assinaturas de 
 | **Motor ↔ Memória** | Leitura e conclusão de fatos | O motor consulta fatos para casar premissas e grava conclusões com CF calculado e origem identificada. |
 | **Motor → Explicação** | Registro de traço | Cada ciclo de inferência produz um registro detalhado (`Ciclo`): conflito, regra escolhida, premissas avaliadas, CF e bloqueios de fatos únicos. |
 | **Aquisição → Base** | Gestão de conhecimento | Toda regra, pergunta ou produto novo é adicionado via YAML versionado no git em `conhecimento/`, sujeito a revisão por PR. |
-| **Fontes externas → Memória** | Alimentação contextual | `dominio/mercado.py` extrai fatos de mercado (`origem='externo'`) com fonte e período (ex.: CONAB, MG, 09/2026) e os insere na memória antes da inferência. |
+| **Fontes externas → Memória** | Alimentação contextual | `dominio/mercado.py` (CONAB) e `dominio/benchmark.py` (IBGE) extraem fatos externos (`origem='externo'`) com fonte e período (ex.: CONAB, MG, 09/2026) e os inserem na memória antes da inferência. |
 
 Os indicadores econômicos (`dominio/indicadores.py`) entram na memória antes do encadeamento com `origem='calculado'`; suas fórmulas constam em `variaveis.yaml` e são exibidas na explicação ("como?").
 
@@ -212,11 +212,12 @@ def diagnosticar(
 
 #### Semântica do diagnóstico (#10)
 - **Ordem da memória:** respostas (`origem="usuario"`, na ordem do formulário) → mercado da UF no mês (`origem="externo"`) → indicadores (`origem="calculado"`) → `inferir`.
+- **Média da UF no IBGE (#18):** `fatos_benchmark(uf, ano)` (`dominio/benchmark.py`) devolve `produtividade_regional_ibge` no formato dos fatos de mercado (`{valor, unidade, fonte, periodo}`), em L/vaca/dia, do último ano da PPM anterior ao do mês. Entra na memória junto com os fatos da CONAB; sem dado, o fato não entra.
 - **Detalhe de cada origem:** resposta estimada leva `"estimado"`; fato externo leva `"<fonte>, <UF>, <período>"` (ex.: `CONAB, Preços Agropecuários Mensais por UF (PrecosMensalUF.txt), MG, 09/2026`); calculado leva a fórmula com os valores, vinda de `calcular_indicadores`.
 - **CF (D7):** resposta 1,0, ou 0,7 se estiver em `estimados`; externo 1,0; calculado = menor CF das entradas que ele usou, opcionais incluídos. Uma resposta estimada derruba a confiança de toda a cadeia que depende dela.
 - **Ausências:** resposta vazia ou `None` não vira fato. Sem UF ou sem mês de referência, não há fatos de mercado: o sistema não chuta o último mês. Indicador sem entrada obrigatória não entra.
 - **Erro:** chave de `respostas` que não é pergunta da base gera `ValueError`, para uma conclusão passada como resposta não ser ignorada em silêncio (D8).
-- **Interface:** chama só `diagnosticar` e lê o `Resultado` (memória e traço). Não importa `dominio.indicadores`, `dominio.mercado` nem `yaml`; o `test_interface_so_usa_a_api_do_motor` garante isso.
+- **Interface:** chama só `diagnosticar` e lê o `Resultado` (memória e traço). Não importa `dominio.indicadores`, `dominio.mercado`, `dominio.benchmark` nem `yaml`; o `test_interface_so_usa_a_api_do_motor` garante isso.
 
 #### Validação de entradas (#14)
 

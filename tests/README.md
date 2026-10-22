@@ -6,8 +6,9 @@ Rode na raiz do repositório, com o ambiente ativado (passo a passo no `README.m
 pytest -q                                  # todos os testes
 pytest tests/test_mercado.py -q            # só os fatos de mercado
 pytest tests/test_catalogo_mercado.py -v   # catálogo da CONAB, com um caso por produto
+pytest tests/test_benchmark.py -v          # média da UF no IBGE e a R-IND-11, sem rede
 pytest tests/test_inferencia.py -v         # só o motor de inferência
-pytest tests/test_casos.py -v              # os 4 casos conhecidos de fazendas
+pytest tests/test_casos.py -v              # os 5 casos conhecidos de fazendas
 pytest tests/test_regras.py -v             # as regras da base real, uma a uma
 pytest tests/test_diagnostico.py -v        # a ponta a ponta: diagnóstico e tela
 pytest tests/test_validacao.py -v          # validação de entradas
@@ -19,7 +20,7 @@ pytest tests/test_validacao.py -v          # validação de entradas
 | `test_esqueleto.py` | o projeto de pé: a base de conhecimento carrega, o app abre e o `CLAUDE.md` só importa o `AGENTS.md` | "O projeto roda?" |
 | `test_contratos.py` | contratos da base de conhecimento, validações de carga, memória de trabalho e APIs do motor | "Os contratos e regras estão consistentes?" |
 | `test_indicadores.py` | 21 indicadores econômicos e zootécnicos calculados à mão, opcionais, divisores zero e paridade YAML | "Os cálculos econômicos e zootécnicos estão corretos e protegidos?" |
-| `test_casos.py` | os 4 casos conhecidos de fazendas (lucro, médio prazo, curto prazo por alimentação, prejuízo por preço + reprodução) com contas à mão | "O sistema se comporta como esperado nos casos de referência?" |
+| `test_casos.py` | os 5 casos conhecidos de fazendas (lucro, médio prazo, curto prazo por alimentação, prejuízo por preço + reprodução, produtividade abaixo da média da UF no IBGE) com contas à mão | "O sistema se comporta como esperado nos casos de referência?" |
 | `test_regras.py` | as regras de `conhecimento/regras.yaml`, uma a uma, com os fatos postos direto na memória | "Cada regra conclui o que deve, e só quando deve?" |
 | `test_diagnostico.py` | a ponta a ponta (#10, #13, #16): o `diagnosticar` monta a memória e os 4 casos conhecidos viram parecer executivo real na tela | "As respostas viram um parecer de verdade, na tela?" |
 | `test_validacao.py` | validação e normalização de respostas (#14), rejeição de entradas inválidas e preservação de zero explícito | "O formulário e a API barram dados inconsistentes antes de rodar o motor?" |
@@ -27,6 +28,7 @@ pytest tests/test_validacao.py -v          # validação de entradas
 | `test_inferencia.py` | o motor de inferência: premissas, ciclo por camada, resolução de conflito, bloqueio de fato único e CF, com a fazenda de exemplo do guia | "O motor raciocina como o guia descreve?" |
 | `test_mercado.py` | **a saída**: o que `fatos_mercado` devolve | "O sistema calcula os fatos certos?" |
 | `test_catalogo_mercado.py` | **a entrada**: o catálogo `conhecimento/mercado.yaml` e o script de rascunho | "O sistema está lendo os produtos certos da base?" |
+| `test_benchmark.py` | o snapshot da PPM/IBGE, a média da UF (`fatos_benchmark`) e a R-IND-11 no caso 05, com a rede bloqueada | "A comparação com o IBGE funciona offline e dispara quando deve?" |
 
 Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - **id trocado no catálogo** (4744, soja, no lugar de 4742, milho): só o `test_catalogo_mercado.py` pega;
@@ -34,11 +36,11 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 
 ### `test_contratos.py`
 - Valida o carregamento da base real e da base fixture de exemplo (`tests/fixtures/base_exemplo/`);
-- Confere se as variáveis externas batem com o que `fatos_mercado` devolve em nomes e unidades;
+- Confere se as variáveis externas batem com o que `fatos_mercado` e `fatos_benchmark` devolvem em nomes e unidades;
 - Testa 27 casos de preenchimento incorreto de regras, perguntas e variáveis (incluindo ciclo, conclusões e duplicatas em opcionais, e camada no `$nome`), garantindo mensagens de erro claras;
 - Testa operações da memória de trabalho (adição, combinação de CF, valor único vs multivalorado, cópia independente);
 - Testa `perguntas_pendentes` v0 e integridade do motor (não importa domínio, interface ou Streamlit);
-- Garante que a interface só usa a API: `app.py` e `interface/` não importam `dominio.indicadores`, `dominio.mercado` nem `yaml` (critério da #10).
+- Garante que a interface só usa a API: `app.py` e `interface/` não importam `dominio.indicadores`, `dominio.mercado`, `dominio.benchmark` nem `yaml` (critério da #10).
 
 ### `test_indicadores.py`
 - Valida os 21 indicadores econômicos e zootécnicos contra uma fazenda de referência conferida à mão em 2 casas decimais;
@@ -48,9 +50,9 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - Garante paridade 1:1 entre a tupla `INDICADORES` em código e o grupo `calculadas` de `conhecimento/variaveis.yaml`.
 
 ### `test_casos.py`
-- Valida os 4 casos conhecidos de referência em `dados/casos/` (`01_lucro.yaml`, `02_medio_prazo.yaml`, `03_curto_prazo_alimentacao.yaml` e `04_prejuizo_preco_reproducao.yaml`);
+- Valida os 5 casos conhecidos de referência em `dados/casos/` (`01_lucro.yaml`, `02_medio_prazo.yaml`, `03_curto_prazo_alimentacao.yaml`, `04_prejuizo_preco_reproducao.yaml` e `05_benchmark_ibge.yaml`);
 - Garante conformidade de todas as variáveis de entrada com `conhecimento/perguntas.yaml` (sem erros no formulário e dentro dos limites zootécnicos);
-- Confere os preços oficiais da CONAB (`fatos_mercado`) para a UF e mês de referência de cada caso;
+- Confere os preços oficiais da CONAB (`fatos_mercado`) e a média da UF no IBGE (`fatos_benchmark`) para a UF e mês de referência de cada caso;
 - Confere todos os 21 indicadores econômicos e zootécnicos (`calcular_indicadores`) contra as contas feitas à mão em 2 casas decimais;
 - Valida o enquadramento de Matsunaga et al. (1976) e os sinais de domínio característicos de cada perfil;
 - Atua como contrato executável para as regras de produção (`inferir`) e ponta a ponta: o `diagnosticar` chega ao mesmo traço da montagem manual;
@@ -107,8 +109,14 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - O carregador recusa catálogo mal preenchido: campo `PREENCHER`, id sem aspas, `sem_preco_no_mes` inválido, faixa invertida e produto repetido.
 - O rascunho de `python -m dados.rascunho_catalogo` traz os dados da base e só entra no catálogo depois de preenchido.
 
+### `test_benchmark.py` (#18)
+- O snapshot da PPM tem a variável, a unidade e o produto certos e as 27 UFs, e a tabela `CODIGO_UF` cobre as UFs do formulário;
+- a média de MG bate com a conta à mão (`10.070.127 × 1.000 ÷ 2.963.271 ÷ 365`), em L/vaca/dia, do último ano antes do mês; UF sem dado, símbolo do SIDRA (`...`, `-`) e vacas zeradas não geram fato;
+- critérios de aceite da #18: com a rede bloqueada, o caso 05 dispara a R-IND-11 (7,78 < 9,3105 L/vaca/dia) com CF 1,0.
+
 ## Quando um teste falhar
 - **Depois de trocar a base da CONAB:** o `test_catalogo_mercado.py` aponta id que mudou de nome e valor fora da faixa, com UF, mês e valor. Se o preço for real, alargue a faixa no `mercado.yaml`.
+- **Depois de trocar os snapshots do IBGE:** o `test_benchmark.py` aponta variável, unidade ou UF errada.
 - **Depois de mexer no `dominio/mercado.py`:** o `test_mercado.py` mostra qual fato mudou.
 - **Depois de mexer nos cálculos de fazendas ou regras:** o `test_casos.py` mostra qual caso divergiu.
 - **Depois de criar ou alterar uma regra:** o `test_regras.py` mostra qual regra deixou de concluir o esperado ou ficou sem caso.

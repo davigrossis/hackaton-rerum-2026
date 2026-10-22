@@ -1,6 +1,6 @@
 # Variáveis que não são perguntas: calculadas, externas e conclusões.
 # Formato completo e documentação em docs/contratos.md e docs/dominio.md.
-versao: "1.0"
+versao: "1.1"
 
 calculadas:
   # Faturamento
@@ -216,6 +216,12 @@ externas:
     unidade: kg/L
     fonte: "CONAB, Preços Agropecuários Mensais por UF (PrecosMensalUF.txt)"
 
+  - nome: produtividade_regional_ibge
+    descricao: Produção média de leite por vaca ordenhada na UF, por dia, no último ano da PPM
+    tipo: numero
+    unidade: L/vaca/dia
+    fonte: "IBGE, Pesquisa da Pecuária Municipal: tabelas 74 (produção de leite) e 94 (vacas ordenhadas)"
+
 conclusoes:
   - nome: situacao_economica
     descricao: Em que faixa econômica a fazenda se enquadra segundo Matsunaga et al. (1976)
@@ -258,6 +264,13 @@ conclusoes:
     tipo: categoria
     unico: true
     valores: [baixa, adequada, alta]
+
+  - nome: produtividade_regional_nivel
+    descricao: Comparativo da produtividade por vaca (L/vaca/dia) contra a média estadual do IBGE
+    camada: indicador
+    tipo: categoria
+    unico: true
+    valores: [abaixo_media]
 
   - nome: troca_leite_milho_nivel
     descricao: Situação do poder de compra de insumos medido pela relação de troca leite:milho

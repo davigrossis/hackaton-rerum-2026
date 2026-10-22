@@ -1,17 +1,23 @@
 # Regras de produção
 
-Base em `conhecimento/regras.yaml`: 30 regras em 4 camadas, do dado à ação (versão 1.0).
+Base em `conhecimento/regras.yaml`: 31 regras em 4 camadas, do dado à ação (versão 1.1).
 
-Todas as 30 regras contam com fundamentação técnica na literatura científica e órgãos oficiais de pesquisa agropecuária (Embrapa Gado de Leite, CEPEA/Esalq, CONAB, Matsunaga et al. e MAPA), com 0 regras pendentes de fonte.
+Todas as 31 regras contam com fundamentação técnica na literatura científica e órgãos oficiais de pesquisa agropecuária (Embrapa Gado de Leite, CEPEA/Esalq, CONAB, IBGE, Matsunaga et al. e MAPA), com 0 regras pendentes de fonte.
 
 | Camada | Regras | O que fazem |
 |---|---|---|
-| indicador | R-IND-01 a R-IND-10 | comparam um número com um limiar ou com o mercado da UF (CONAB) |
+| indicador | R-IND-01 a R-IND-11 | comparam um número com um limiar, com o mercado da UF (CONAB) ou com a média da UF (IBGE) |
 | situação | R-SIT-01 a R-SIT-04 | enquadram a fazenda nas 4 faixas de Matsunaga et al. (1976) |
 | causa | R-CAU-01 a R-CAU-07 | explicam o resultado da fazenda sem lucro; a qualidade (IN 76) vale sempre |
 | recomendação | R-REC-01 a R-REC-09 | uma ou duas ações por causa, e a da faixa de lucro |
 
 O catálogo completo, com CF, fonte e como cada regra foi adquirida, é da #19. Este arquivo começa pela validação com o especialista (#12).
+
+## Média da UF no IBGE (#18)
+
+A R-IND-11 compara o `litros_vaca_dia` da fazenda com a média da UF na PPM/IBGE, convertida para L/vaca/dia: `mil litros × 1.000 ÷ vacas ordenhadas ÷ 365`, no último ano antes do mês (dados e consultas em `dados/raw/FONTES.md`). A comparação é aproximada: a fazenda informa um mês e as vacas em lactação; a PPM mede o ano inteiro e as vacas ordenhadas. Por isso a conclusão fica na camada de indicador e não alimenta causa nem recomendação.
+
+Em MG a média é 9,31 L/vaca/dia, abaixo do limiar de 10 da R-IND-03, então as duas disparam juntas, como no caso 05. Em SC, PR e RS a média passa de 10, e a R-IND-11 aponta fazendas que a R-IND-03 deixa passar.
 
 ## Validação com o técnico da RERUM (#12)
 

@@ -43,6 +43,7 @@ conhecimento/          # BASE DE CONHECIMENTO, explícita e versionada
 dominio/               # código específico do T3
   indicadores.py       #   fórmulas: COE, COT, CT, custo/L, margens, % lactação...
   mercado.py           #   dados/raw → fatos externos (preços CONAB por UF)
+  benchmark.py         #   dados/raw → média da UF no IBGE (PPM, L/vaca/dia)
   diagnostico.py       #   respostas → indicadores + mercado → motor → resultado
 dados/
   raw/                 #   snapshots originais (CONAB/IBGE) + FONTES.md; não editar

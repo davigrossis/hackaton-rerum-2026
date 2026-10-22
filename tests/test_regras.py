@@ -85,6 +85,12 @@ CASOS = [
         id="R-IND-10",
     ),
     pytest.param(
+        # Média de SC na PPM 2025; acima de 10 L/vaca/dia, a R-IND-03 não dispara junto.
+        {"litros_vaca_dia": 11.0, "produtividade_regional_ibge": 12.0486},
+        "R-IND-11", "produtividade_regional_nivel", "abaixo_media",
+        id="R-IND-11",
+    ),
+    pytest.param(
         {"receita_total": 80000.0, **CUSTOS},
         "R-SIT-01", "situacao_economica", "lucro",
         id="R-SIT-01",
@@ -226,6 +232,10 @@ def test_regras_com_fonte_pendente():
         ({"ccs": 500.0}, "qualidade_leite"),
         ({"cpp": 300.0}, "qualidade_leite"),
         ({"litros_dia_homem": 150.0}, "mao_obra_nivel"),
+        (
+            {"litros_vaca_dia": 12.0486, "produtividade_regional_ibge": 12.0486},
+            "produtividade_regional_nivel",
+        ),
     ],
 )
 def test_indicador_no_limiar_nao_dispara(fatos: dict, fato: str):

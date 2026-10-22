@@ -26,6 +26,7 @@ ROTULOS_VALORES: dict[str, str] = {
     "abaixo_mercado": "Abaixo da média estadual",
     "no_mercado": "Em linha com a média estadual",
     "acima_mercado": "Acima da média estadual",
+    "abaixo_media": "Abaixo da média estadual",
     "alto": "Alto",
     "adequado": "Adequado",
     "adequada": "Adequada",
@@ -225,6 +226,7 @@ def _cards_mercado(resultado: Resultado, base: Base) -> None:
         f
         for f in resultado.memoria.fatos()
         if any(o.tipo == "externo" for o in f.origens)
+        and f.nome != "produtividade_regional_ibge"
     ]
     if not externos:
         st.info("Informe UF e mês de referência para comparar com a CONAB.")

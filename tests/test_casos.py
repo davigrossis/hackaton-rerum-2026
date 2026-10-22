@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from dominio.benchmark import fatos_benchmark
 from dominio.diagnostico import diagnosticar
 from dominio.indicadores import calcular_indicadores
 from dominio.mercado import fatos_mercado
@@ -45,15 +46,16 @@ def _converter_periodo(mes_referencia: str) -> tuple[int, int]:
     return (int(partes[1]), int(partes[0]))
 
 
-def test_quatro_casos_conhecidos_existem():
-    """Garante a existência e identificação dos 4 casos de referência."""
-    assert len(CASOS) == 4
+def test_cinco_casos_conhecidos_existem():
+    """Garante a existência e identificação dos 5 casos de referência."""
+    assert len(CASOS) == 5
     nomes_arquivos = [p.name for p in sorted(PASTA_CASOS.glob("*.yaml"))]
     assert nomes_arquivos == [
         "01_lucro.yaml",
         "02_medio_prazo.yaml",
         "03_curto_prazo_alimentacao.yaml",
         "04_prejuizo_preco_reproducao.yaml",
+        "05_benchmark_ibge.yaml",
     ]
     situacoes = [c["esperado"]["situacao_economica"] for c in CASOS]
     assert set(situacoes) == {"lucro", "medio_prazo", "curto_prazo", "prejuizo"}
@@ -115,10 +117,10 @@ def test_contrato_e_faixas_do_caso(caso: dict):
 
 @pytest.mark.parametrize("caso", CASOS, ids=IDS_CASOS)
 def test_fatos_mercado_do_caso(caso: dict):
-    """Confere os preços da CONAB recuperados para a UF e mês do caso."""
+    """Confere os preços da CONAB e a média do IBGE para a UF e mês do caso."""
     uf = caso["entradas"]["uf"]
     periodo = _converter_periodo(caso["entradas"]["mes_referencia"])
-    fatos = fatos_mercado(uf, periodo)
+    fatos = {**fatos_mercado(uf, periodo), **fatos_benchmark(uf, periodo[0])}
 
     externos_esperados = caso["esperado"]["externos"]
     for chave, valor_esperado in externos_esperados.items():
@@ -220,7 +222,8 @@ def test_inferencia_regras_no_caso(caso: dict):
         memoria.adicionar(chave, valor, cf=1.0, origem="usuario")
 
     periodo = _converter_periodo(caso["entradas"]["mes_referencia"])
-    fatos = fatos_mercado(caso["entradas"]["uf"], periodo)
+    uf = caso["entradas"]["uf"]
+    fatos = {**fatos_mercado(uf, periodo), **fatos_benchmark(uf, periodo[0])}
     for chave, fato in fatos.items():
         memoria.adicionar(chave, fato["valor"], cf=1.0, origem="externo")
 
