@@ -196,6 +196,21 @@ def test_app_carregar_exemplo_zera_estimados():
     assert app.session_state[CHAVE_ESTIMADOS] == set()
 
 
+def test_app_voltar_ao_inicio_zera_calculadora():
+    app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
+    _selecionar_exemplo(app)
+    for _ in carregar_base().secoes:
+        _clicar(app.button, "Avançar")
+    _clicar(app.button, "Gerar diagnóstico")
+
+    _clicar(app.button, "Voltar ao início")
+
+    assert app.session_state[CHAVE_RESULTADO] is None
+    assert app.session_state["dados"] == {}
+    assert app.session_state[CHAVE_ESTIMADOS] == set()
+    assert app.session_state["etapa"] == 0
+
+
 @pytest.mark.parametrize("nome_arquivo", CASOS_ARQUIVOS)
 def test_quatro_casos_renderizam_parecer_sem_erro(nome_arquivo):
     caso = yaml.safe_load(
@@ -293,7 +308,7 @@ def test_por_que_aparece_no_formulario():
     _clicar(app.button, "Avançar")  # etapa 1 (Rebanho)
 
     expanders = [e.label for e in app.expander]
-    assert "Por que pergunto?" in expanders
+    assert "Por que a pergunta?" in expanders
 
     tela = " ".join(m.value for m in app.markdown)
     assert "R-IND-" in tela or "R-CAU-" in tela

@@ -95,6 +95,7 @@ def carregar_exemplo_selecionado(ids_validos: set[str]) -> None:
 
 def limpar_respostas() -> None:
     _limpar_widgets()
+    st.session_state["fazenda_exemplo"] = None
     st.session_state[CHAVE_DADOS] = {}
     st.session_state[CHAVE_ESTIMADOS] = set()
     st.session_state[CHAVE_ETAPA] = 0
@@ -182,7 +183,7 @@ def _renderizar_pergunta(
     if base is not None:
         regras = regras_dependentes(base, pergunta.id)
         if regras:
-            with st.expander("Por que pergunto?"):
+            with st.expander("Por que a pergunta?"):
                 for r in regras:
                     st.markdown(f"• **{r.id}** ({r.camada}): {r.descricao}")
 

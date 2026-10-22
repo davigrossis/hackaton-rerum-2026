@@ -67,7 +67,7 @@ CSS = f"""
     opacity: 0.75;
 }}
 
-[data-testid="stPills"] button[aria-label^="! "] {{
+[data-testid="stPills"] button[aria-label^="⚠️ "] {{
     border-color: {FENO};
     color: {FENO};
 }}
@@ -94,7 +94,7 @@ def etapas(titulos: list[str], atual: int, estados: list[str]) -> int | None:
     """Trilha clicável. Devolve o índice escolhido (ou None se desmarcou)."""
 
     def rotulo(i: int) -> str:
-        marca = {"ok": "✓ ", "alerta": "! "}.get(estados[i], "")
+        marca = {"ok": "✓ ", "alerta": "⚠️ "}.get(estados[i], "")
         return f"{marca}{titulos[i]}"
 
     opcoes: dict[str, object] = {

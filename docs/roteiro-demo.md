@@ -13,7 +13,7 @@
 | :---: | :---: | :--- | :--- | :--- |
 | **1** | **00:00 – 02:30** | **Abertura, Desafio T3 e Arquitetura** | Slide de abertura e terminal com testes offline (`pytest`) | Desafio econômico do leite, **regra inegociável de 0 LLM no app**, arquitetura desacoplada em 4 camadas e 278 testes. |
 | **2** | **02:30 – 04:30** | **Base de Conhecimento v1.0 e Motor** | Aba lateral: `"Base de conhecimento"` | 4 camadas de regras, fundamentação técnica (Embrapa, CEPEA, MAPA IN 76/77) e modelo MYCIN de cálculo de CF. |
-| **3** | **04:30 – 06:30** | **Formulário, Incerteza e Explicabilidade Prévia** | Aba `"Diagnóstico"`: navegação pelas 6 etapas | Popover explicativo *"Por que pergunto?"*, tratamento rigoroso de campos opcionais e marcação de *"Valor estimado"* (CF 70%). |
+| **3** | **04:30 – 06:30** | **Formulário, Incerteza e Explicabilidade Prévia** | Aba `"Diagnóstico"`: navegação pelas 6 etapas | Popover explicativo *"Por que a pergunta?"*, tratamento rigoroso de campos opcionais e marcação de *"Valor estimado"* (CF 70%). |
 | **4** | **06:30 – 10:00** | **Fazenda 1: Saudável e Resolução de Conflito** | Carregar Caso 01 (Lucro) e gerar parecer | Enquadramento Matsunaga (Lucro), **resolução de conflito ao vivo** (`R-IND-06` vence `R-IND-05`), rastreabilidade no *"Como cheguei aqui?"*, benchmark CONAB e IBGE. |
 | **5** | **10:00 – 13:00** | **Fazenda 2: Em Crise e Diálogo do Motor** | Formulário Caso 04 (Prejuízo) com dados parciais | **Diálogo interativo** (*"O motor precisa de mais um dado"*), parecer em Prejuízo, causas ranqueadas por CF e recomendações práticas. |
 | **6** | **13:00 – 15:00** | **Simulação "E se?", Auditoria e Conclusão** | Seção de Simulação e expander da Memória | Sliders dinâmicos revertendo a situação econômica em tempo real, auditoria de todos os fatos e encerramento. |
@@ -55,14 +55,14 @@
 
 ---
 
-### Bloco 3: Formulário Inteligente, "Por que pergunto?" e Incerteza (04:30 – 06:30)
+### Bloco 3: Formulário Inteligente, "Por que a pergunta?" e Incerteza (04:30 – 06:30)
 
 - **Quem fala:** Integrante 3 (Interface e Experiência do Produtor).
-- **Ação na tela:** Voltar para a página **"Diagnóstico"**. Navegar pelas etapas do formulário ("Geral", "Rebanho", "Produção & Preço", "Custos de Alimentação"). Clicar no popover explicativo *"Por que pergunto?"* na variável de concentrado e mostrar a opção de *"Valor estimado"*.
+- **Ação na tela:** Voltar para a página **"Diagnóstico"**. Navegar pelas etapas do formulário ("Geral", "Rebanho", "Produção & Preço", "Custos de Alimentação"). Clicar no popover explicativo *"Por que a pergunta?"* na variável de concentrado e mostrar a opção de *"Valor estimado"*.
 - **Fala sugerida:**
   > "Na tela de Diagnóstico, dividimos a coleta em 6 etapas ergonômicas para que o produtor não se sinta sobrecarregado por uma planilha massiva.
   >
-  > Um diferencial crucial de transparência é o **'Por que pergunto?'**: ao lado de perguntas críticas como gastos com concentrado ou vacas secas, o usuário pode abrir o popover e ver exatamente quais conclusões econômicas o motor pretende derivar com aquela informação. O sistema explica sua necessidade antes mesmo de o dado ser digitado.
+  > Um diferencial crucial de transparência é o **'Por que a pergunta?'**: ao lado de perguntas críticas como gastos com concentrado ou vacas secas, o usuário pode abrir o popover e ver exatamente quais conclusões econômicas o motor pretende derivar com aquela informação. O sistema explica sua necessidade antes mesmo de o dado ser digitado.
   >
   > Outro aspecto essencial de campo é o botão **'Valor estimado (CF 70%)'**: se o produtor não tiver a nota fiscal exata do adubo ou do mineral no momento da consulta, ele marca o valor como estimado. O motor reduz a confiança daquela entrada para 0,7 e propaga essa incerteza matematicamente por toda a árvore de cálculo até o parecer executivo, alertando o técnico sobre onde residem as dúvidas."
 
@@ -178,7 +178,7 @@
 - **Tempos por Bloco:**
   - Bloco 1 (Abertura e Arquitetura): 2 min 18 s *(preciso e direto)*
   - Bloco 2 (Base v1.0 e Motor): 1 min 58 s *(fluido)*
-  - Bloco 3 (Formulário e Incerteza): 1 min 55 s *(destaque para o popover "Por que pergunto?")*
+  - Bloco 3 (Formulário e Incerteza): 1 min 55 s *(destaque para o popover "Por que a pergunta?")*
   - Bloco 4 (Fazenda Saudável e Conflito): 3 min 32 s *(ênfase perfeita no expander "Como cheguei aqui?")*
   - Bloco 5 (Fazenda Crise e Diálogo): 3 min 05 s *(demonstração impecável da R-IND-08 pendente)*
   - Bloco 6 (Simulação e Fechamento): 2 min 00 s *(transição da simulação ao vivo e conclusão cravada)*

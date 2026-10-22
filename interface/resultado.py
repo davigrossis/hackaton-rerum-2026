@@ -101,6 +101,7 @@ def renderizar_revisao(
             colunas[1].button(
                 "Corrigir",
                 key=f"corrigir_{indice}_{mensagem}",
+                use_container_width=True,
                 on_click=ir_para,
                 args=(indice,),
             )  # fmt: skip
@@ -122,6 +123,7 @@ def renderizar_revisao(
             st.button(
                 "Editar esta seção",
                 key=f"editar_{indice}",
+                use_container_width=True,
                 on_click=ir_para,
                 args=(indice,),
             )  # fmt: skip
@@ -378,7 +380,7 @@ def _diagnostico_indicadores(resultado: Resultado, base: Base) -> None:
 
 
 def _dados_opcionais_pendentes(resultado: Resultado, base: Base) -> None:
-    """Explica 'Por que pergunto?' para perguntas opcionais não informadas que travam regras."""
+    """Explica 'Por que a pergunta?' para perguntas opcionais não informadas que travam regras."""
     opcionais = [p for p in base.perguntas if not p.obrigatoria]
     faltando = [p for p in opcionais if not resultado.memoria.tem(p.id)]
     motivos_relevantes: list[tuple[str, str, list[str]]] = []

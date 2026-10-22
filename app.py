@@ -93,14 +93,49 @@ def _barra_lateral(secoes: list[fm.SecaoComPerguntas], ids: set[str]) -> None:
         st.button("Limpar respostas", on_click=fm.limpar_respostas)
 
 
-def _navegacao(atual: int, ultima: int) -> None:
-    voltar, _, avancar = st.columns([1, 3, 1])
-    if atual > 0:
-        voltar.button("Voltar", on_click=_ir_para_com_navegacao, args=(atual - 1,))
-    if atual < ultima:
+def _navegacao(
+    atual: int,
+    ultima: int,
+    gerar_diagnostico: bool = False,
+    gerar_desabilitado: bool = False,
+    respostas: dict | None = None,
+    estimados: frozenset[str] = frozenset(),
+) -> None:
+    """Renderiza ações do formulário juntas, centralizadas e na mesma linha."""
+    _, grupo, _ = st.columns([1, 2, 1])
+    if atual == 0 and atual < ultima:
+        avancar = grupo.columns([1, 2, 1])[1]
         avancar.button(
             "Avançar",
             type="primary",
+            use_container_width=True,
+            on_click=_ir_para_com_navegacao,
+            args=(atual + 1,),
+        )
+        return
+
+    voltar, avancar = grupo.columns(2, gap="small")
+    if atual > 0:
+        voltar.button(
+            "Voltar",
+            use_container_width=True,
+            on_click=_ir_para_com_navegacao,
+            args=(atual - 1,),
+        )
+    if gerar_diagnostico:
+        avancar.button(
+            "Gerar diagnóstico",
+            type="primary",
+            use_container_width=True,
+            disabled=gerar_desabilitado,
+            on_click=_gerar,
+            args=(respostas or {}, estimados),
+        )
+    elif atual < ultima:
+        avancar.button(
+            "Avançar",
+            type="primary",
+            use_container_width=True,
             on_click=_ir_para_com_navegacao,
             args=(atual + 1,),
         )
@@ -131,7 +166,8 @@ def _dialogo_pendencias(
             fm._renderizar_pergunta(pergunta, st.session_state[fm.CHAVE_DADOS])
 
     fm.sincronizar_respostas(perguntas)
-    if st.button("Continuar diagnóstico", type="primary"):
+    _, grupo, _ = st.columns([1, 2, 1])
+    if grupo.button("Continuar diagnóstico", type="primary", use_container_width=True):
         _gerar(fm.coletar_respostas(), fm.coletar_estimados(), pendencias_vistas=True)
         st.rerun()
 
@@ -166,10 +202,19 @@ def main() -> None:
             _dialogo_pendencias(base, resultado, pendentes)
             return
         renderizar_parecer(resultado, base)
-        st.button(
+        _, grupo, _ = st.columns([1, 2, 1])
+        editar, inicio = grupo.columns(2, gap="small")
+        editar.button(
             "Editar respostas",
+            use_container_width=True,
             on_click=_ir_para_com_navegacao,
             args=(len(secoes),),
+        )
+        inicio.button(
+            "Voltar ao início",
+            type="primary",
+            use_container_width=True,
+            on_click=fm.limpar_respostas,
         )
         return
 
@@ -194,17 +239,17 @@ def main() -> None:
         achados = fm.problemas(secoes, respostas)
         estimados = fm.coletar_estimados()
         renderizar_revisao(secoes, respostas, achados, _ir_para, estimados)
-        st.button(
-            "Gerar diagnóstico",
-            type="primary",
-            disabled=bool(achados),
-            on_click=_gerar,
-            args=(respostas, estimados),
-        )
         if st.session_state.get(CHAVE_ERRO):
             st.error(st.session_state[CHAVE_ERRO])
 
-    _navegacao(atual, revisao)
+    _navegacao(
+        atual,
+        revisao,
+        gerar_diagnostico=atual == revisao,
+        gerar_desabilitado=bool(achados) if atual == revisao else False,
+        respostas=respostas if atual == revisao else None,
+        estimados=estimados if atual == revisao else frozenset(),
+    )
 
 
 if __name__ == "__main__":

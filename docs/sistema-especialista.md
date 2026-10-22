@@ -622,7 +622,7 @@ Um técnico abre o sistema e responde às perguntas do `perguntas.yaml`. A lista
 | Custos pagos no mês (ração, mão de obra, energia...) | R$ 62.000 | entram no `coe` |
 | Depreciação do mês | R$ 12.000 | entra no `cot` |
 
-Se o técnico clicar em "Por que pergunto?" ao lado do preço, a resposta vem da regra R-IND-01 (seção 7).
+Se o técnico clicar em "Por que a pergunta?" ao lado do preço, a resposta vem da regra R-IND-01 (seção 7).
 
 ### Passo 2: a memória antes do raciocínio
 O `dominio/diagnostico.py` monta a memória inicial com três origens.

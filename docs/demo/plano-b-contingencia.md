@@ -34,7 +34,7 @@
 
 ## 2. Formulário Inteligente e Explicabilidade Prévia (Bloco 3)
 
-### Detalhe do Popover "Por que pergunto?":
+### Detalhe do Popover "Por que a pergunta?":
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐
 │ [?] Por que pergunto sobre 'custo_concentrado'?                       │
