@@ -8,7 +8,7 @@ from typing import Any
 import streamlit as st
 
 from interface.exemplo import FAZENDA_EXEMPLO
-from motor.regras import Pergunta, Secao
+from motor.regras import Base, Pergunta, Regra, Secao
 
 CHAVE_DADOS = "dados"
 CHAVE_ESTIMADOS = "estimados"
@@ -26,6 +26,28 @@ SecaoComPerguntas = tuple[Secao, list[Pergunta]]
 def pode_estimar(pergunta: Pergunta) -> bool:
     """Apenas grandezas numéricas (numero/inteiro) podem ser marcadas como estimadas."""
     return pergunta.tipo in ("numero", "inteiro")
+
+
+def regras_dependentes(base: Base, pergunta_id: str) -> list[Regra]:
+    """Retorna regras que usam a pergunta diretamente ou via variáveis calculadas derivadas."""
+    calculadas = [v for v in base.variaveis.values() if v.grupo == "calculadas"]
+    vars_dependentes = {pergunta_id}
+    mudou = True
+    while mudou:
+        mudou = False
+        for c in calculadas:
+            if c.nome not in vars_dependentes and any(
+                dep in vars_dependentes for dep in c.entradas + c.opcionais
+            ):
+                vars_dependentes.add(c.nome)
+                mudou = True
+
+    regras_vistas: dict[str, Regra] = {}
+    for var in vars_dependentes:
+        for r in base.regras_que_usam(var):
+            if r.id not in regras_vistas:
+                regras_vistas[r.id] = r
+    return sorted(regras_vistas.values(), key=lambda r: (r.camada, r.id))
 
 
 def iniciar_estado() -> None:
@@ -96,7 +118,9 @@ def _semear(pergunta: Pergunta, dados: dict[str, Any]) -> None:
             )
 
 
-def _renderizar_pergunta(pergunta: Pergunta, dados: dict[str, Any]) -> None:
+def _renderizar_pergunta(
+    pergunta: Pergunta, dados: dict[str, Any], base: Base | None = None
+) -> None:
     _semear(pergunta, dados)
     chave = _chave(pergunta)
     rotulo = pergunta.texto + (" :red[\\*]" if pergunta.obrigatoria else "")
@@ -149,15 +173,24 @@ def _renderizar_pergunta(pergunta: Pergunta, dados: dict[str, Any]) -> None:
             estimados.discard(pergunta.id)
         st.session_state[CHAVE_ESTIMADOS] = estimados
 
+    if base is not None:
+        regras = regras_dependentes(base, pergunta.id)
+        if regras:
+            with st.expander("Por que pergunto?"):
+                for r in regras:
+                    st.markdown(f"• **{r.id}** ({r.camada}): {r.descricao}")
 
-def renderizar_etapa(secao: Secao, perguntas: list[Pergunta]) -> None:
+
+def renderizar_etapa(
+    secao: Secao, perguntas: list[Pergunta], base: Base | None = None
+) -> None:
     dados = st.session_state[CHAVE_DADOS]
     with st.container(border=True):
         st.subheader(secao.titulo)
         colunas = st.columns(2, gap="large")
         for i, pergunta in enumerate(perguntas):
             with colunas[i % 2]:
-                _renderizar_pergunta(pergunta, dados)
+                _renderizar_pergunta(pergunta, dados, base)
 
 
 def coletar_respostas() -> dict[str, Any]:

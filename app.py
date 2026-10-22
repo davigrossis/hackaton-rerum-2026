@@ -110,7 +110,7 @@ def main() -> None:
 
     if atual < revisao:
         secao, perguntas_secao = secoes[atual]
-        fm.renderizar_etapa(secao, perguntas_secao)
+        fm.renderizar_etapa(secao, perguntas_secao, base)
     else:
         achados = fm.problemas(secoes, respostas)
         estimados = fm.coletar_estimados()

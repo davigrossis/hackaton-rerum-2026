@@ -20,7 +20,8 @@ pytest tests/test_diagnostico.py -v        # a ponta a ponta: diagnóstico e tel
 | `test_indicadores.py` | 21 indicadores econômicos e zootécnicos calculados à mão, opcionais, divisores zero e paridade YAML | "Os cálculos econômicos e zootécnicos estão corretos e protegidos?" |
 | `test_casos.py` | os 4 casos conhecidos de fazendas (lucro, médio prazo, curto prazo por alimentação, prejuízo por preço + reprodução) com contas à mão | "O sistema se comporta como esperado nos casos de referência?" |
 | `test_regras.py` | as regras de `conhecimento/regras.yaml`, uma a uma, com os fatos postos direto na memória | "Cada regra conclui o que deve, e só quando deve?" |
-| `test_diagnostico.py` | a ponta a ponta (#10): o `diagnosticar` monta a memória (origens, CF herdado, estimados, campo vazio, sem mercado) e a fazenda-exemplo vira parecer real na tela | "As respostas viram um parecer de verdade, na tela?" |
+| `test_diagnostico.py` | a ponta a ponta (#10, #13, #16): o `diagnosticar` monta a memória e os 4 casos conhecidos viram parecer executivo real na tela | "As respostas viram um parecer de verdade, na tela?" |
+| `test_explicacao.py` | as explicações "como?" e "por quê?" derivadas do traço de inferência | "O motor explica como chegou a cada conclusão e por que pergunta cada dado?" |
 | `test_inferencia.py` | o motor de inferência: premissas, ciclo por camada, resolução de conflito, bloqueio de fato único e CF, com a fazenda de exemplo do guia | "O motor raciocina como o guia descreve?" |
 | `test_mercado.py` | **a saída**: o que `fatos_mercado` devolve | "O sistema calcula os fatos certos?" |
 | `test_catalogo_mercado.py` | **a entrada**: o catálogo `conhecimento/mercado.yaml` e o script de rascunho | "O sistema está lendo os produtos certos da base?" |
@@ -59,7 +60,13 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - opcional vazio (ausente ou `None`) não vira fato: sem capital investido não há CT, e a fazenda que cobre o COT fica sem situação;
 - sem mês de referência não há fatos de mercado, e a situação sai mesmo assim;
 - chave que não é pergunta da base gera `ValueError`;
-- **na tela:** com `AppTest`, carrega a fazenda-exemplo, avança até a revisão e gera o diagnóstico. O parecer mostra a situação real com CF e regra, e não há mais mock.
+- **na tela (#10, #13, #16):** com `AppTest`, testa a fazenda-exemplo e os 4 casos conhecidos de referência. O parecer renderiza a situação destacada, cards fazenda × CONAB, gráfico do COE, causas e recomendações por CF, explicações "como cheguei aqui?" e "por que pergunto?" no formulário, expander com toda a memória de trabalho e rodapé com versão e data do snapshot.
+
+### `test_explicacao.py`
+- Valida as explicações "como?" e "por quê?" derivadas do traço de inferência;
+- Testa derivação da cadeia indicador -> situação com premissas avaliadas e fatos antecedentes;
+- Testa visualização de fórmulas de calculados e regras mais gerais bloqueadas por conflito;
+- Testa marcação de perguntas que destravam regras no formulário e com dados ausentes.
 
 ### `test_regras.py`
 - Testa só a base: os fatos entram direto na memória, sem calcular indicadores. A ponta a ponta fica no `test_casos.py`;
@@ -98,6 +105,3 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - **Depois de mexer nos cálculos de fazendas ou regras:** o `test_casos.py` mostra qual caso divergiu.
 - **Depois de criar ou alterar uma regra:** o `test_regras.py` mostra qual regra deixou de concluir o esperado ou ficou sem caso.
 - **Depois de mexer no `diagnosticar` ou na tela de parecer:** o `test_diagnostico.py` mostra se a memória perdeu origem ou CF, ou se a fazenda-exemplo deixou de chegar ao parecer.
-
-## Ainda não existe
-- `test_explicacao.py`: testes das explicações "como?" e "por quê?", que chegam com a issue #9 (`fase-2-explicacao-no-motor`).

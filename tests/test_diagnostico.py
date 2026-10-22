@@ -1,4 +1,4 @@
-"""Testes da ponta a ponta (#10, #16): respostas -> mercado -> indicadores -> motor -> tela."""
+"""Testes da ponta a ponta (#10, #13, #16): respostas -> mercado -> indicadores -> motor -> tela."""
 
 from pathlib import Path
 
@@ -12,6 +12,12 @@ from motor.inferencia import Resultado
 from motor.regras import carregar_base
 
 RAIZ = Path(__file__).resolve().parent.parent
+CASOS_ARQUIVOS = [
+    "01_lucro.yaml",
+    "02_medio_prazo.yaml",
+    "03_curto_prazo_alimentacao.yaml",
+    "04_prejuizo_preco_reproducao.yaml",
+]
 CASO_LUCRO = yaml.safe_load(
     (RAIZ / "dados" / "casos" / "01_lucro.yaml").read_text(encoding="utf-8")
 )["entradas"]
@@ -171,3 +177,60 @@ def test_app_carregar_exemplo_zera_estimados():
 
     _clicar(app.sidebar.button, "Carregar fazenda-exemplo")
     assert app.session_state[CHAVE_ESTIMADOS] == set()
+
+
+@pytest.mark.parametrize("nome_arquivo", CASOS_ARQUIVOS)
+def test_quatro_casos_renderizam_parecer_sem_erro(nome_arquivo):
+    caso = yaml.safe_load(
+        (RAIZ / "dados" / "casos" / nome_arquivo).read_text(encoding="utf-8")
+    )
+    entradas = caso["entradas"]
+    situacao_esperada = caso["esperado"]["situacao_economica"]
+
+    base = carregar_base()
+    resultado = diagnosticar(entradas, base=base)
+
+    app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
+    app.session_state[CHAVE_RESULTADO] = resultado
+    app.run()
+
+    assert not app.exception
+    assert resultado.memoria.valor("situacao_economica").valor == situacao_esperada
+
+    subheaders = [s.value for s in app.subheader]
+    assert "Diagnóstico Econômico" in subheaders
+    assert "Fazenda × Mercado da UF (CONAB)" in subheaders
+    assert "Composição do Custo Operacional Efetivo (COE)" in subheaders
+    expanders = [e.label for e in app.expander]
+    assert "Memória de trabalho (todos os fatos)" in expanders
+    assert "Como cheguei aqui?" in expanders
+
+    tela = " ".join(m.value for m in app.markdown)
+    assert f'<div class="el-situacao">{situacao_esperada}</div>' in tela
+    assert "Base de conhecimento v" in tela
+    assert "Snapshot CONAB de 20/10/2026" in tela
+
+
+def test_como_e_memoria_aparecem_no_parecer():
+    app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
+    _clicar(app.sidebar.button, "Carregar fazenda-exemplo")
+    for _ in carregar_base().secoes:
+        _clicar(app.button, "Avançar")
+    _clicar(app.button, "Gerar diagnóstico")
+
+    assert not app.exception
+    tela = " ".join(m.value for m in app.markdown)
+    assert "Concluído pela regra" in tela
+    assert "Premissas avaliadas" in tela
+    assert "Memória de trabalho (todos os fatos)" in [e.label for e in app.expander]
+
+
+def test_por_que_aparece_no_formulario():
+    app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
+    _clicar(app.button, "Avançar")  # etapa 1 (Rebanho)
+
+    expanders = [e.label for e in app.expander]
+    assert "Por que pergunto?" in expanders
+
+    tela = " ".join(m.value for m in app.markdown)
+    assert "R-IND-" in tela or "R-CAU-" in tela
