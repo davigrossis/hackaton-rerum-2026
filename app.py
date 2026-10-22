@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from dominio.diagnostico import diagnosticar
+from dominio.diagnostico import diagnosticar, validar_respostas
 from interface import formulario as fm
 from interface.estilo import (
     ICONE_APP,
@@ -36,8 +36,15 @@ def _ir_para_com_navegacao(etapa: int) -> None:
 
 
 def _gerar(respostas: dict, estimados: frozenset[str] = frozenset()) -> None:
+    st.session_state[fm.CHAVE_RESULTADO] = None
+    base = obter_base()
+    erros = validar_respostas(respostas, base.perguntas)
+    if erros:
+        for mensagem in erros.values():
+            st.error(mensagem)
+        return
     st.session_state[fm.CHAVE_RESULTADO] = diagnosticar(
-        respostas, estimados=estimados, base=obter_base()
+        respostas, estimados=estimados, base=base
     )
 
 

@@ -217,3 +217,25 @@ def diagnosticar(
 - **Ausências:** resposta vazia ou `None` não vira fato. Sem UF ou sem mês de referência, não há fatos de mercado: o sistema não chuta o último mês. Indicador sem entrada obrigatória não entra.
 - **Erro:** chave de `respostas` que não é pergunta da base gera `ValueError`, para uma conclusão passada como resposta não ser ignorada em silêncio (D8).
 - **Interface:** chama só `diagnosticar` e lê o `Resultado` (memória e traço). Não importa `dominio.indicadores`, `dominio.mercado` nem `yaml`; o `test_interface_so_usa_a_api_do_motor` garante isso.
+
+#### Validação de entradas (#14)
+
+```python
+# dominio/diagnostico.py — também utilizada pelo formulário
+def validar_respostas(
+    respostas: dict,
+    perguntas: list[Pergunta] | tuple[Pergunta, ...],
+    *,
+    exigir_obrigatorias: bool = True,
+) -> dict[str, str]: ...
+```
+
+- Retorna erros por identificador, na ordem das perguntas, com mensagens em português. Valida somente os campos declarados nas perguntas recebidas; `diagnosticar` continua rejeitando IDs desconhecidos de respostas e estimados.
+- Chave ausente, `None`, texto vazio ou só espaços representam ausência. Espaços externos são removidos dos textos. A normalização não altera o dicionário recebido; zero explícito continua sendo um fato.
+- Números aceitam `int` e `float` finitos, excluindo booleanos e texto numérico. Inteiros aceitam valores sem parte fracionária (incluindo `1.0`); não há truncamento. Limites de `faixa` são inclusivos, e escolhas devem pertencer às opções cadastradas.
+- Mês exige `MM/AAAA`, de 01 a 12 e ano de 0001 a 9999. A validade da entrada independe da disponibilidade de preços no snapshot.
+- O formulário exige obrigatórios, valida opcionais preenchidos e bloqueia geração com pendências. O progresso conta obrigatórios válidos. O callback revalida e descarta resultado anterior antes de gerar.
+- `diagnosticar` mantém sua assinatura e permite respostas parciais (`exigir_obrigatorias=False`), mas valores fornecidos inválidos geram `ValueError` antes de consultar mercado, calcular indicadores ou inferir.
+- Capital investido permanece opcional e aceita zero, por decisão da equipe na #14. Zero zera a remuneração do capital e faz CT = COT; ausência impede calcular CT. A revisão econômica dessa política permanece pendente. Nenhuma faixa ou regra foi alterada nesta issue.
+
+Esta extensão de contrato deve ser destacada no PR para revisão da equipe.

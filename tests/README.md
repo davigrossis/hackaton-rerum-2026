@@ -101,3 +101,9 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 
 ## Ainda não existe
 - `test_explicacao.py`: testes das explicações "como?" e "por quê?", que chegam com a issue #9 (`fase-2-explicacao-no-motor`).
+
+### `test_validacao.py` (#14)
+- Valida os extremos e valores fora das faixas declaradas, obrigatórios, opcionais, inteiros, números não finitos, UF e mês.
+- Confere normalização sem mutação, ausência sem fato, zero explícito, diagnóstico parcial e rejeição antes da consulta ao mercado.
+- Executa o app vazio até a revisão e bloqueia zero vacas injetado fora dos limites do widget; verifica correção e preservação de CF estimado.
+- Verifica revalidação no callback e descarte de resultado anterior. As proteções matemáticas de divisores zero continuam cobertas por `test_indicadores.py`.
