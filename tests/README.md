@@ -12,6 +12,7 @@ pytest tests/test_casos.py -v              # os 5 casos conhecidos de fazendas
 pytest tests/test_regras.py -v             # as regras da base real, uma a uma
 pytest tests/test_diagnostico.py -v        # a ponta a ponta: diagnóstico e tela
 pytest tests/test_validacao.py -v          # validação de entradas
+pytest tests/test_rodada_bugs.py -v        # rodada de bugs: 2 fazendas inventadas, formulário e fazendas aleatórias
 ```
 
 ## O que cada arquivo testa
@@ -28,6 +29,7 @@ pytest tests/test_validacao.py -v          # validação de entradas
 | `test_inferencia.py` | o motor de inferência: premissas, ciclo por camada, resolução de conflito, bloqueio de fato único e CF, com a fazenda de exemplo do guia | "O motor raciocina como o guia descreve?" |
 | `test_mercado.py` | **a saída**: o que `fatos_mercado` devolve | "O sistema calcula os fatos certos?" |
 | `test_catalogo_mercado.py` | **a entrada**: o catálogo `conhecimento/mercado.yaml` e o script de rascunho | "O sistema está lendo os produtos certos da base?" |
+| `test_rodada_bugs.py` | a rodada de bugs cruzada (#22): 2 fazendas inventadas com contas à mão, cobertura de todas as regras, o formulário digitado campo a campo e fazendas aleatórias | "Uma fazenda que ninguém do time escreveu passa sem exceção e com o parecer certo?" |
 | `test_benchmark.py` | o snapshot da PPM/IBGE, a média da UF (`fatos_benchmark`) e a R-IND-11 no caso 05, com a rede bloqueada | "A comparação com o IBGE funciona offline e dispara quando deve?" |
 
 Os dois arquivos de mercado se completam; nenhum substitui o outro:
@@ -114,10 +116,18 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - a média de MG bate com a conta à mão (`10.070.127 × 1.000 ÷ 2.963.271 ÷ 365`), em L/vaca/dia, do último ano antes do mês; UF sem dado, símbolo do SIDRA (`...`, `-`) e vacas zeradas não geram fato;
 - critérios de aceite da #18: com a rede bloqueada, o caso 05 dispara a R-IND-11 (7,78 < 9,3105 L/vaca/dia) com CF 1,0.
 
+### `test_rodada_bugs.py` (#22)
+- Duas fazendas inventadas em `tests/fixtures/rodada_bugs/`, no formato de `dados/casos/`, com as contas à mão nos comentários: **A** (PR, alta produção, médio prazo, CCS acima da IN 76) e **B** (GO, familiar, prejuízo, troca leite:milho desfavorável, CPP acima da IN 76, opcionais vazios e zero explícito);
+- confere mercado, indicadores (e os que não existem por falta de opcional), situação, conclusões de indicador com CF, regra bloqueada e causas e recomendações como conjunto exato com CF;
+- cobertura: toda regra da base dispara ponta a ponta em algum dos 5 casos conhecidos ou das 2 fazendas. **Regra nova precisa disparar em algum caso**;
+- na tela: os 7 casos são digitados no formulário, etapa por etapa, até o parecer; o motor recebe exatamente as respostas da fazenda;
+- 100 fazendas aleatórias (sementes fixas) com extremos de faixa, opcionais vazios, meses fora do snapshot e valores estimados: nenhuma exceção no diagnóstico, no "como?", no "por quê?" e na simulação, e a situação bate com as faixas de Matsunaga.
+
 ## Quando um teste falhar
 - **Depois de trocar a base da CONAB:** o `test_catalogo_mercado.py` aponta id que mudou de nome e valor fora da faixa, com UF, mês e valor. Se o preço for real, alargue a faixa no `mercado.yaml`.
 - **Depois de trocar os snapshots do IBGE:** o `test_benchmark.py` aponta variável, unidade ou UF errada.
 - **Depois de mexer no `dominio/mercado.py`:** o `test_mercado.py` mostra qual fato mudou.
 - **Depois de mexer nos cálculos de fazendas ou regras:** o `test_casos.py` mostra qual caso divergiu.
 - **Depois de criar ou alterar uma regra:** o `test_regras.py` mostra qual regra deixou de concluir o esperado ou ficou sem caso.
+- **Depois de criar uma regra que nenhum caso dispara:** o `test_casos_e_fazendas_disparam_toda_regra_da_base` aponta a regra; ajuste um caso ou uma fazenda inventada para dispará-la.
 - **Depois de mexer no `diagnosticar` ou na tela de parecer:** o `test_diagnostico.py` mostra se a memória perdeu origem ou CF, ou se a fazenda-exemplo deixou de chegar ao parecer.
