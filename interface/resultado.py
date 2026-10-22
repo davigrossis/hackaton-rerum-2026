@@ -1,4 +1,4 @@
-"""Revisão antes do envio e parecer provisório (mock)."""
+"""Revisão antes do envio e parecer econômico com simulação "e se?"."""
 
 from __future__ import annotations
 
@@ -8,6 +8,9 @@ from typing import Any
 import streamlit as st
 
 from interface.formulario import SecaoComPerguntas
+from interface.simulacao import renderizar_simulacao
+from motor.inferencia import Resultado
+from motor.regras import Base
 
 
 def formatar(valor: Any, unidade: str | None) -> str:
@@ -58,21 +61,21 @@ def renderizar_revisao(
             )  # fmt: skip
 
 
-def renderizar_mock(respostas: dict[str, Any]) -> None:
+def renderizar_resultado(resultado: Resultado, base: Base) -> None:
+    """Parecer econômico do motor, seguido da simulação "e se?"."""
     with st.container(border=True):
-        st.markdown(
-            '<span class="el-mock">RESULTADO PROVISÓRIO (MOCK)</span>',
-            unsafe_allow_html=True,
-        )
-        st.caption("Situação econômica")
-        st.markdown(
-            '<div class="el-situacao">médio prazo</div>', unsafe_allow_html=True
-        )
-        st.write(
-            "Este parecer é só uma demonstração do fluxo da tela. "
-            "A classificação real virá das regras de produção e do motor "
-            "de inferência, com confiança (CF) e explicação de “como?” e "
-            "“por quê?” para cada conclusão."
-        )
-    with st.expander("Dados enviados ao diagnóstico"):
-        st.json(respostas)
+        st.subheader("Parecer econômico")
+        fato = resultado.memoria.valor("situacao_economica")
+        if fato is None:
+            st.warning(
+                "Nenhuma regra classificou a situação econômica com os dados "
+                "informados."
+            )
+        else:
+            rotulo = str(fato.valor).replace("_", " ")
+            st.caption("Situação econômica")
+            st.markdown(
+                f'<div class="el-situacao">{rotulo}</div>', unsafe_allow_html=True
+            )
+            st.caption(f"Confiança: {fato.cf:.0%}")
+    renderizar_simulacao(resultado, base)

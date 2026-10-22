@@ -1,9 +1,10 @@
-"""Entrada do Streamlit: assistente em etapas e parecer provisório do EconoLeite."""
+"""Entrada do Streamlit: assistente em etapas, parecer e simulação do Datalac."""
 
 from __future__ import annotations
 
 import streamlit as st
 
+from dominio.diagnostico import diagnosticar
 from interface import formulario as fm
 from interface.estilo import (
     ICONE_APP,
@@ -12,10 +13,12 @@ from interface.estilo import (
     cabecalho,
     etapas,
 )
-from interface.resultado import renderizar_mock, renderizar_revisao
+from interface.resultado import renderizar_resultado, renderizar_revisao
 from motor.inferencia import perguntas_pendentes
 from motor.memoria import Memoria
 from motor.regras import Base, carregar_base
+
+CHAVE_ERRO = "erro_diagnostico"
 
 
 @st.cache_resource
@@ -27,6 +30,7 @@ def obter_base() -> Base:
 def _ir_para(etapa: int) -> None:
     st.session_state[fm.CHAVE_ETAPA] = etapa
     st.session_state[fm.CHAVE_RESULTADO] = None
+    st.session_state[CHAVE_ERRO] = None
 
 
 def _ir_para_com_navegacao(etapa: int) -> None:
@@ -34,8 +38,15 @@ def _ir_para_com_navegacao(etapa: int) -> None:
     _ir_para(etapa)
 
 
-def _gerar(respostas: dict) -> None:
-    st.session_state[fm.CHAVE_RESULTADO] = respostas
+def _gerar(respostas: dict, base: Base) -> None:
+    """Roda o diagnóstico; em caso de falha, guarda a mensagem para a tela."""
+    st.session_state[CHAVE_ERRO] = None
+    try:
+        st.session_state[fm.CHAVE_RESULTADO] = diagnosticar(respostas, base=base)
+    except (ValueError, KeyError, OSError) as erro:
+        st.session_state[CHAVE_ERRO] = (
+            f"Não foi possível gerar o diagnóstico: {erro}"
+        )
 
 
 def _barra_lateral(secoes: list[fm.SecaoComPerguntas], ids: set[str]) -> None:
@@ -83,7 +94,7 @@ def main() -> None:
     _barra_lateral(secoes, ids)
 
     if st.session_state[fm.CHAVE_RESULTADO] is not None:
-        renderizar_mock(st.session_state[fm.CHAVE_RESULTADO])
+        renderizar_resultado(st.session_state[fm.CHAVE_RESULTADO], base)
         st.button(
             "Editar respostas",
             on_click=_ir_para_com_navegacao,
@@ -113,8 +124,10 @@ def main() -> None:
         renderizar_revisao(secoes, respostas, achados, _ir_para)
         st.button(
             "Gerar diagnóstico", type="primary", disabled=bool(achados),
-            on_click=_gerar, args=(respostas,),
+            on_click=_gerar, args=(respostas, base),
         )  # fmt: skip
+        if st.session_state.get(CHAVE_ERRO):
+            st.error(st.session_state[CHAVE_ERRO])
 
     _navegacao(atual, revisao)
 
