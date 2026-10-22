@@ -1,4 +1,149 @@
 # Base de conhecimento: regras de produção.
 # Formato completo e documentação em docs/contratos.md.
 versao: "0.1"
-regras: []
+regras:
+  # Indicadores: comparam um número com um limiar ou com o mercado da UF.
+  # Limiar sem fonte confiável fica com fonte "PENDENTE"; a origem dele vai no comentário.
+  - id: R-IND-01
+    descricao: Preço recebido pela fazenda abaixo do preço médio da UF no mesmo mês
+    camada: indicador
+    prioridade: 50
+    se:
+      - [preco_leite_fazenda, "<", $preco_leite_uf]
+    entao: {fato: preco_leite, valor: abaixo_mercado}
+    cf: 1.0
+    fonte: "CONAB, PrecosMensalUF: preço médio do leite ao produtor na UF (comparação direta)"
+
+  # Limiar: docs/dominio.md, seção 6.1 (alerta abaixo de 70%; ideal de 80% a 85%).
+  - id: R-IND-02
+    descricao: Menos de 70% das vacas em lactação; indica falha reprodutiva
+    camada: indicador
+    prioridade: 50
+    se:
+      - [pct_vacas_lactacao, "<", 70]
+    entao: {fato: lactacao_nivel, valor: baixa}
+    cf: 1.0
+    fonte: "PENDENTE"
+
+  # Limiar: docs/dominio.md, seção 6.2 (abaixo de 10 a 12 L/vaca/dia).
+  - id: R-IND-03
+    descricao: Menos de 10 L/vaca/dia; produtividade baixa por vaca em lactação
+    camada: indicador
+    prioridade: 50
+    se:
+      - [litros_vaca_dia, "<", 10]
+    entao: {fato: produtividade_nivel, valor: baixa}
+    cf: 1.0
+    fonte: "PENDENTE"
+
+  # Limiar: docs/dominio.md, seção 6.4 (acima de 40% compromete a margem).
+  - id: R-IND-04
+    descricao: Concentrado consome mais de 40% da receita total
+    camada: indicador
+    prioridade: 50
+    se:
+      - [pct_concentrado_receita, ">", 40]
+    entao: {fato: concentrado_receita_nivel, valor: alto}
+    cf: 1.0
+    fonte: "PENDENTE"
+
+  # Par regra geral × exceção. Limiar: docs/dominio.md, seção 6.3 (faixa saudável de
+  # 40% a 65% do COE, "exceto rebanhos de altíssima produtividade"); os 25 L/vaca/dia
+  # vêm do exemplo da #8. Mesma prioridade: a R-IND-06 vence por ter mais condições,
+  # e a R-IND-05 fica bloqueada no traço, porque custo_alimentar_nivel é único.
+  - id: R-IND-05
+    descricao: Alimentação acima de 65% do COE; custo alimentar alto
+    camada: indicador
+    prioridade: 50
+    se:
+      - [pct_alimentacao_coe, ">", 65]
+    entao: {fato: custo_alimentar_nivel, valor: alto}
+    cf: 1.0
+    fonte: "PENDENTE"
+
+  - id: R-IND-06
+    descricao: Exceção da R-IND-05; acima de 25 L/vaca/dia, a produção justifica o peso da alimentação no COE
+    camada: indicador
+    prioridade: 50
+    se:
+      - [pct_alimentacao_coe, ">", 65]
+      - [litros_vaca_dia, ">", 25]
+    entao: {fato: custo_alimentar_nivel, valor: adequado}
+    cf: 0.8
+    fonte: "PENDENTE"
+
+  - id: R-IND-07
+    descricao: Relação de troca leite:milho da UF abaixo da média dos últimos 12 meses
+    camada: indicador
+    prioridade: 50
+    se:
+      - [troca_leite_milho_uf, "<", $troca_leite_milho_uf_media_12m]
+    entao: {fato: troca_leite_milho_nivel, valor: desfavoravel}
+    cf: 1.0
+    fonte: "CONAB, PrecosMensalUF: relação de troca do mês contra a média de 12 meses (comparação direta)"
+
+  # A IN 76 usa a média geométrica de 3 meses; aqui o valor do mês é a aproximação.
+  - id: R-IND-08
+    descricao: CCS do mês acima de 500 mil CS/mL, limite da IN 76/2018
+    camada: indicador
+    prioridade: 50
+    se:
+      - [ccs, ">", 500]
+    entao: {fato: qualidade_leite, valor: fora_in76}
+    cf: 1.0
+    fonte: "MAPA, IN 76/2018: CCS máxima de 500 mil CS/mL (média geométrica trimestral)"
+
+  - id: R-IND-09
+    descricao: CPP do mês acima de 300 mil UFC/mL, limite da IN 76/2018
+    camada: indicador
+    prioridade: 50
+    se:
+      - [cpp, ">", 300]
+    entao: {fato: qualidade_leite, valor: fora_in76}
+    cf: 1.0
+    fonte: "MAPA, IN 76/2018: CPP máxima de 300 mil UFC/mL (média geométrica trimestral)"
+
+  # Situação econômica: as 4 faixas de Matsunaga et al. (1976), sem sobreposição
+  # (docs/dominio.md, seção 5). Sem capital investido não há CT: lucro e médio prazo
+  # não disparam, e a fazenda que cobre o COT fica sem situação (decisão da #8).
+  - id: R-SIT-01
+    descricao: Receita cobre o CT; há lucro econômico, viável no longo prazo
+    camada: situacao
+    prioridade: 50
+    se:
+      - [receita_total, ">=", $ct]
+    entao: {fato: situacao_economica, valor: lucro}
+    cf: 1.0
+    fonte: "Matsunaga et al. (1976), metodologia de custo operacional"
+
+  - id: R-SIT-02
+    descricao: Receita cobre o COT mas não o CT; estável só no médio prazo
+    camada: situacao
+    prioridade: 50
+    se:
+      - [receita_total, ">=", $cot]
+      - [receita_total, "<", $ct]
+    entao: {fato: situacao_economica, valor: medio_prazo}
+    cf: 1.0
+    fonte: "Matsunaga et al. (1976), metodologia de custo operacional"
+
+  - id: R-SIT-03
+    descricao: Receita cobre o COE mas não o COT; sobrevive só no curto prazo
+    camada: situacao
+    prioridade: 50
+    se:
+      - [receita_total, ">=", $coe]
+      - [receita_total, "<", $cot]
+    entao: {fato: situacao_economica, valor: curto_prazo}
+    cf: 1.0
+    fonte: "Matsunaga et al. (1976), metodologia de custo operacional"
+
+  - id: R-SIT-04
+    descricao: Receita não cobre o COE; prejuízo
+    camada: situacao
+    prioridade: 50
+    se:
+      - [receita_total, "<", $coe]
+    entao: {fato: situacao_economica, valor: prejuizo}
+    cf: 1.0
+    fonte: "Matsunaga et al. (1976), metodologia de custo operacional"
