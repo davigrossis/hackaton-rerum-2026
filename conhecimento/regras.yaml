@@ -103,6 +103,18 @@ regras:
     cf: 1.0
     fonte: "MAPA, IN 76/2018: CPP máxima de 300 mil UFC/mL (média geométrica trimestral)"
 
+  # O CEPEA dá 150 L/homem/dia como mínimo na ordenha manual e 300 na mecânica; o
+  # formulário não pergunta o tipo de ordenha, então vale o menor.
+  - id: R-IND-10
+    descricao: Menos de 150 L/dia por pessoa; produtividade da mão de obra baixa
+    camada: indicador
+    prioridade: 50
+    se:
+      - [litros_dia_homem, "<", 150]
+    entao: {fato: mao_obra_nivel, valor: baixa}
+    cf: 1.0
+    fonte: "CEPEA/Esalq (2012), custos de produção de leite: mínimo 'ideal' de 150 L/homem/dia na ordenha manual e 300 na mecânica"
+
   # Situação econômica: as 4 faixas de Matsunaga et al. (1976), sem sobreposição
   # (docs/dominio.md, seção 5). Sem capital investido não há CT: lucro e médio prazo
   # não disparam, e a fazenda que cobre o COT fica sem situação (decisão da #8).
@@ -147,3 +159,182 @@ regras:
     entao: {fato: situacao_economica, valor: prejuizo}
     cf: 1.0
     fonte: "Matsunaga et al. (1976), metodologia de custo operacional"
+
+  # Causas: um indicador ruim vira causa provável quando a fazenda não chega ao lucro
+  # (médio prazo, curto prazo ou prejuízo). Com lucro, ou sem situação concluída (sem
+  # CT), não há resultado ruim a explicar. A exceção é a qualidade (R-CAU-06): leite
+  # fora da IN 76 sofre desconto ou recusa em qualquer situação.
+  # O CF das causas é julgamento da equipe, a validar com o técnico (docs/regras.md).
+  - id: R-CAU-01
+    descricao: Preço abaixo da média da UF numa fazenda sem lucro; o preço recebido é causa provável
+    camada: causa
+    prioridade: 50
+    se:
+      - [preco_leite, "==", abaixo_mercado]
+      - [situacao_economica, "in", [medio_prazo, curto_prazo, prejuizo]]
+    entao: {fato: causa, valor: preco_recebido_baixo}
+    cf: 0.8
+    fonte: "CONAB, PrecosMensalUF: preço da UF como referência de mercado; docs/dominio.md, seções 3 e 7"
+
+  - id: R-CAU-02
+    descricao: Alimentação pesando demais no COE numa fazenda sem lucro; o custo alimentar é causa provável
+    camada: causa
+    prioridade: 50
+    se:
+      - [custo_alimentar_nivel, "==", alto]
+      - [situacao_economica, "in", [medio_prazo, curto_prazo, prejuizo]]
+    entao: {fato: causa, valor: custo_alimentar_alto}
+    cf: 0.8
+    fonte: "CEPEA/Esalq (2012): o concentrado, base da alimentação, é o item que mais move o COE; docs/dominio.md, seção 2"
+
+  # Mesma conclusão da R-CAU-02 por outra evidência: juntas, combinam o CF
+  # (0,8 + 0,7 × 0,2 = 0,94), como o OU da IN 76 na camada de indicador.
+  - id: R-CAU-03
+    descricao: Concentrado consumindo mais de 40% da receita numa fazenda sem lucro; reforça o custo alimentar como causa
+    camada: causa
+    prioridade: 50
+    se:
+      - [concentrado_receita_nivel, "==", alto]
+      - [situacao_economica, "in", [medio_prazo, curto_prazo, prejuizo]]
+    entao: {fato: causa, valor: custo_alimentar_alto}
+    cf: 0.7
+    fonte: "docs/dominio.md, seção 6.4: concentrado acima de 40% da receita compromete a margem"
+
+  - id: R-CAU-04
+    descricao: Poucas vacas em lactação numa fazenda sem lucro; rebanho e reprodução são causa provável
+    camada: causa
+    prioridade: 50
+    se:
+      - [lactacao_nivel, "==", baixa]
+      - [situacao_economica, "in", [medio_prazo, curto_prazo, prejuizo]]
+    entao: {fato: causa, valor: rebanho_reproducao}
+    cf: 0.8
+    fonte: "CEPEA/Esalq (2012): longo intervalo entre partos e problemas reprodutivos; docs/dominio.md, seção 6.1"
+
+  - id: R-CAU-05
+    descricao: Baixa produção por vaca numa fazenda sem lucro; produtividade baixa, ligada sobretudo à nutrição
+    camada: causa
+    prioridade: 50
+    se:
+      - [produtividade_nivel, "==", baixa]
+      - [situacao_economica, "in", [medio_prazo, curto_prazo, prejuizo]]
+    entao: {fato: causa, valor: produtividade_baixa}
+    cf: 0.6
+    fonte: "CEPEA/Esalq (2012): baixa produção individual ocasionada pela deficiência na nutrição; docs/dominio.md, seção 6.2"
+
+  - id: R-CAU-06
+    descricao: Leite fora da IN 76; desconto ou recusa pelo laticínio, em qualquer situação econômica
+    camada: causa
+    prioridade: 50
+    se:
+      - [qualidade_leite, "==", fora_in76]
+    entao: {fato: causa, valor: qualidade_leite}
+    cf: 0.7
+    fonte: "MAPA, IN 76/2018: leite fora do padrão sofre desconto ou recusa (docs/dominio.md, seção 3)"
+
+  - id: R-CAU-07
+    descricao: Pouco leite por pessoa numa fazenda sem lucro; o volume não dilui o custo da mão de obra
+    camada: causa
+    prioridade: 50
+    se:
+      - [mao_obra_nivel, "==", baixa]
+      - [situacao_economica, "in", [medio_prazo, curto_prazo, prejuizo]]
+    entao: {fato: causa, valor: escala_baixa}
+    cf: 0.7
+    fonte: "CNA/Cepea, Campo Futuro (03/2020): com produção diária baixa, o custo do funcionário contratado não é diluído"
+
+  # Recomendações: uma ou duas por causa, e a da faixa de lucro. A recomendação herda
+  # a confiança da causa; o CF da regra é julgamento da equipe (docs/regras.md).
+  - id: R-REC-01
+    descricao: Preço recebido baixo; negociar com o laticínio bonificação por qualidade e volume, ou comparar outros compradores
+    camada: recomendacao
+    prioridade: 50
+    se:
+      - [causa, "==", preco_recebido_baixo]
+    entao: {fato: recomendacao, valor: negociar_com_laticinio}
+    cf: 0.8
+    fonte: "docs/dominio.md, seções 1, 3 e 7: bonificações por qualidade e volume junto ao laticínio"
+
+  - id: R-REC-02
+    descricao: Custo alimentar alto; revisar a dieta e a compra de concentrado com um nutricionista
+    camada: recomendacao
+    prioridade: 50
+    se:
+      - [causa, "==", custo_alimentar_alto]
+    entao: {fato: recomendacao, valor: revisar_dieta_com_nutricionista}
+    cf: 0.8
+    fonte: "docs/dominio.md, seção 7: readequar a formulação da ração com nutricionista"
+
+  - id: R-REC-03
+    descricao: Custo alimentar alto com a troca leite:milho abaixo da média de 12 meses; planejar a compra de insumos (compra coletiva, estoque quando a troca melhorar)
+    camada: recomendacao
+    prioridade: 50
+    se:
+      - [causa, "==", custo_alimentar_alto]
+      - [troca_leite_milho_nivel, "==", desfavoravel]
+    entao: {fato: recomendacao, valor: planejar_compra_de_insumos}
+    cf: 0.7
+    fonte: "CONAB, PrecosMensalUF: relação de troca leite:milho; docs/dominio.md, seção 7: estoque de milho em momento favorável de troca"
+
+  # Segunda causa que leva à dieta: com a R-REC-02, as duas combinam o CF (OU).
+  - id: R-REC-04
+    descricao: Produtividade baixa por vaca; revisar a dieta com um nutricionista
+    camada: recomendacao
+    prioridade: 50
+    se:
+      - [causa, "==", produtividade_baixa]
+    entao: {fato: recomendacao, valor: revisar_dieta_com_nutricionista}
+    cf: 0.7
+    fonte: "CEPEA/Esalq (2012): baixa produção individual por deficiência na nutrição; docs/dominio.md, seção 6.2"
+
+  - id: R-REC-05
+    descricao: Poucas vacas em lactação; rever o manejo reprodutivo (inseminação, diagnóstico de gestação) e descartar vacas improdutivas
+    camada: recomendacao
+    prioridade: 50
+    se:
+      - [causa, "==", rebanho_reproducao]
+    entao: {fato: recomendacao, valor: manejo_reprodutivo}
+    cf: 0.8
+    fonte: "docs/dominio.md, seções 1 e 7: programar cobertura e inseminação; descartar vacas com longo período de serviço"
+
+  - id: R-REC-06
+    descricao: Leite fora da IN 76; melhorar a higiene da ordenha e a refrigeração do leite
+    camada: recomendacao
+    prioridade: 50
+    se:
+      - [causa, "==", qualidade_leite]
+    entao: {fato: recomendacao, valor: melhorar_higiene_ordenha}
+    cf: 0.8
+    fonte: "MAPA, IN 77/2018: boas práticas na produção de leite; docs/dominio.md, seção 3 (CPP reflete higiene e refrigeração)"
+
+  # Mesmo limite da R-IND-08 (IN 76): só a CCS alta aponta mastite; a CPP alta, não.
+  - id: R-REC-07
+    descricao: CCS acima do limite da IN 76; controlar a mastite (linha de ordenha, tratamento e descarte de vacas crônicas)
+    camada: recomendacao
+    prioridade: 50
+    se:
+      - [causa, "==", qualidade_leite]
+      - [ccs, ">", 500]
+    entao: {fato: recomendacao, valor: controlar_mastite}
+    cf: 0.8
+    fonte: "MAPA, IN 76/2018: CCS máxima de 500 mil CS/mL; CCS alta indica mastite (docs/dominio.md, seção 3)"
+
+  - id: R-REC-08
+    descricao: Escala baixa; avaliar aumentar o volume com a mesma equipe (produtividade, treinamento) ou readequar a equipe
+    camada: recomendacao
+    prioridade: 50
+    se:
+      - [causa, "==", escala_baixa]
+    entao: {fato: recomendacao, valor: avaliar_escala}
+    cf: 0.7
+    fonte: "CEPEA/Esalq (2012): aumentar a produtividade e treinar os funcionários dilui o gasto com mão de obra"
+
+  - id: R-REC-09
+    descricao: Fazenda com lucro; manter o controle de custos e avaliar a expansão
+    camada: recomendacao
+    prioridade: 50
+    se:
+      - [situacao_economica, "==", lucro]
+    entao: {fato: recomendacao, valor: manter_controle_e_avaliar_expansao}
+    cf: 0.8
+    fonte: "Matsunaga et al. (1976); docs/dominio.md, seção 5: receita ≥ CT indica capacidade de expansão e reinvestimento"

@@ -250,12 +250,10 @@ def test_inferencia_regras_no_caso(caso: dict):
             if fato_ind is not None:
                 assert fato_ind.valor == val
 
-    # 5. Valida causas e recomendações quando as regras entrarem (Fase 3, issue #12)
-    regras_causa = [r for r in base.regras if r.camada == "causa"]
-    if regras_causa:
-        causas_obtidas = [f.valor for f in resultado.memoria.valores("causa")]
-        for causa_esp in caso["esperado"].get("causas", []):
-            assert causa_esp in causas_obtidas
+    # 5. Causas e recomendações (#12): o conjunto exato, nem a mais nem a menos
+    for fato, chave in (("causa", "causas"), ("recomendacao", "recomendacoes")):
+        obtidos = {f.valor for f in resultado.memoria.valores(fato)}
+        assert obtidos == set(caso["esperado"][chave]), f"{caso['id']}: {chave}"
 
     # 6. Ponta a ponta (#10): diagnosticar chega ao mesmo traço da montagem manual
     res_diag = diagnosticar(caso["entradas"])
