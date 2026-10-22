@@ -134,6 +134,7 @@ Fórmulas e referências técnicas recomendadas pela literatura especializada (E
 5. **Produtividade da terra e da mão de obra:**
    - $\text{Litros/ha} = \text{Produção Mensal} / \text{Área (ha)}$
    - $\text{Litros/dia-homem} = \text{Produção Diária} / \text{Trabalhadores}$
+   - *Referência:* mínimo "ideal" de **150 L/homem/dia** na ordenha manual e **300** na mecânica (CEPEA/Esalq, 2012). Abaixo disso, o volume diário não dilui o custo da mão de obra (CNA/Cepea, 2020). Como o formulário não pergunta o tipo de ordenha, a R-IND-10 usa o menor.
 
 ---
 
@@ -175,3 +176,5 @@ A estrutura de regras em camadas espelha diretamente as três indagações do pr
 4. **Ministério da Agricultura, Pecuária e Abastecimento (MAPA).** (2018). *Instrução Normativa nº 77, de 26 de novembro de 2018* (Critérios de controle de qualidade e boas práticas na produção de leite).
 5. **CEPEA / Esalq-USP.** *Metodologia de Custos de Produção da Pecuária de Leite no Brasil.* Piracicaba: CEPEA.
 6. **CONAB - Companhia Nacional de Abastecimento.** *Série Histórica de Preços Agropecuários Mensais por UF.* Portal de Informações Agropecuárias.
+7. **CEPEA / Esalq-USP.** (2012). *Produção de leite no semiárido é destaque nos novos painéis levantados em 2011* (relatório de custos de produção de leite, dez/2011). Piracicaba, 21 jan. 2012. https://cepea.org.br/br/categoria/acessar/custos-de-producao-leite-dezembro-2011.aspx
+8. **CNA / Cepea.** (2020). *Pecuária de Leite: eficiência de mão de obra nas propriedades leiteiras é atingida em apenas 36% dos casos.* Projeto Campo Futuro, mar. 2020. https://cna-portal-2022new.dotgroup.com.br/storage/arquivos/pdfativos_Pecuaria_leite_campo_futuro_marco-1.pdf

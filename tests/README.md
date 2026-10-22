@@ -50,7 +50,8 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - Confere os preços oficiais da CONAB (`fatos_mercado`) para a UF e mês de referência de cada caso;
 - Confere todos os 21 indicadores econômicos e zootécnicos (`calcular_indicadores`) contra as contas feitas à mão em 2 casas decimais;
 - Valida o enquadramento de Matsunaga et al. (1976) e os sinais de domínio característicos de cada perfil;
-- Atua como contrato executável para as regras de produção (`inferir`) e ponta a ponta: o `diagnosticar` chega ao mesmo traço da montagem manual.
+- Atua como contrato executável para as regras de produção (`inferir`) e ponta a ponta: o `diagnosticar` chega ao mesmo traço da montagem manual;
+- causas e recomendações batem com o esperado como **conjunto exato** (#12): regra que dispara a mais ou a menos derruba o caso.
 
 ### `test_diagnostico.py`
 - Cada fato entra com a sua origem: resposta (`usuario`), CONAB (`externo`, com UF e mês no detalhe), indicador (`calculado`, com a fórmula e os valores) e conclusão (`regra`, com o id);
@@ -62,11 +63,13 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 
 ### `test_regras.py`
 - Testa só a base: os fatos entram direto na memória, sem calcular indicadores. A ponta a ponta fica no `test_casos.py`;
-- tabela `CASOS`: um caso por regra, com a regra que dispara e a conclusão. **Regra nova precisa de uma linha nela**, e o `test_toda_regra_da_base_tem_caso` falha e aponta a regra que ficou sem caso;
+- tabela `CASOS`: um caso por regra, com a regra que dispara e a conclusão. Causa e recomendação partem dos números (a memória de entrada não aceita conclusões) e, como têm vários valores, basta o esperado estar entre eles. **Regra nova precisa de uma linha nela**, e o `test_toda_regra_da_base_tem_caso` falha e aponta a regra que ficou sem caso;
 - limiar: as comparações são estritas, e exatamente no limiar nada é concluído;
 - situação: cada receita cai numa faixa só, e na marca (COE, COT ou CT) vale a faixa de cima. Sem capital investido não há CT: lucro e médio prazo não disparam, e abaixo do COT a situação sai normalmente;
 - par geral × exceção: a R-IND-06 vence a R-IND-05 por ter mais condições, e a R-IND-05 fica em `bloqueadas`; a exceção não esconde o concentrado na receita, que tem conclusão própria;
 - OU: CCS e CPP fora da IN 76 concluem o mesmo fato, com as duas origens;
+- causas (#12): só explicam fazenda sem lucro, e sem situação (sem CT) não sai causa; a qualidade fora da IN 76 vale mesmo com lucro, e só a CCS alta recomenda controlar mastite;
+- OU com CF combinado: duas evidências de custo alimentar chegam a 0,94, e a recomendação já lê esse CF (0,752); duas causas levam à mesma recomendação (0,7912); a troca leite:milho desfavorável só pesa com custo alimentar alto;
 - a lista exata das regras com `fonte: "PENDENTE"`. Achou a fonte? Atualize a regra e a lista.
 
 ### `test_inferencia.py`
