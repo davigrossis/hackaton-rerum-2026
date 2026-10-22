@@ -25,7 +25,7 @@ as condições, conclusões, confiança e fontes de todas as regras usadas pelo 
 | `app.py`, `interface/` | Interface do usuário |
 | `motor/` | Motor de inferência, memória de trabalho e módulo de explicação |
 | `conhecimento/` | Base de conhecimento: regras, perguntas e catálogo de produtos da CONAB em YAML |
-| `dominio/` | Indicadores econômicos, dados de mercado e diagnóstico |
+| `dominio/` | Indicadores econômicos, dados de mercado (CONAB), média regional (IBGE) e diagnóstico |
 | `dados/` | Fontes de dados externas (snapshots) e casos de teste |
 | `tests/` | Testes (pytest); o que cada arquivo testa: `tests/README.md` |
 | `docs/` | Guia do sistema especialista (`docs/sistema-especialista.md`), processo com IA, arquitetura e regras |
@@ -34,3 +34,4 @@ Convenções e regras de trabalho, para a equipe e para os agentes de IA: `AGENT
 
 ## Fonte dos dados
 Preços agropecuários mensais por UF: CONAB (detalhes e licença em `base.md`).
+Produção de leite e vacas ordenhadas por UF: IBGE – PPM, tabelas 74 e 94 (detalhes e licença em `dados/raw/FONTES.md`).
