@@ -9,6 +9,7 @@ pytest tests/test_catalogo_mercado.py -v   # catálogo da CONAB, com um caso por
 pytest tests/test_inferencia.py -v         # só o motor de inferência
 pytest tests/test_casos.py -v              # os 4 casos conhecidos de fazendas
 pytest tests/test_regras.py -v             # as regras da base real, uma a uma
+pytest tests/test_diagnostico.py -v        # a ponta a ponta: diagnóstico e tela
 ```
 
 ## O que cada arquivo testa
@@ -19,6 +20,7 @@ pytest tests/test_regras.py -v             # as regras da base real, uma a uma
 | `test_indicadores.py` | 21 indicadores econômicos e zootécnicos calculados à mão, opcionais, divisores zero e paridade YAML | "Os cálculos econômicos e zootécnicos estão corretos e protegidos?" |
 | `test_casos.py` | os 4 casos conhecidos de fazendas (lucro, médio prazo, curto prazo por alimentação, prejuízo por preço + reprodução) com contas à mão | "O sistema se comporta como esperado nos casos de referência?" |
 | `test_regras.py` | as regras de `conhecimento/regras.yaml`, uma a uma, com os fatos postos direto na memória | "Cada regra conclui o que deve, e só quando deve?" |
+| `test_diagnostico.py` | a ponta a ponta (#10): o `diagnosticar` monta a memória (origens, CF herdado, estimados, campo vazio, sem mercado) e a fazenda-exemplo vira parecer real na tela | "As respostas viram um parecer de verdade, na tela?" |
 | `test_inferencia.py` | o motor de inferência: premissas, ciclo por camada, resolução de conflito, bloqueio de fato único e CF, com a fazenda de exemplo do guia | "O motor raciocina como o guia descreve?" |
 | `test_mercado.py` | **a saída**: o que `fatos_mercado` devolve | "O sistema calcula os fatos certos?" |
 | `test_catalogo_mercado.py` | **a entrada**: o catálogo `conhecimento/mercado.yaml` e o script de rascunho | "O sistema está lendo os produtos certos da base?" |
@@ -32,7 +34,8 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - Confere se as variáveis externas batem com o que `fatos_mercado` devolve em nomes e unidades;
 - Testa 27 casos de preenchimento incorreto de regras, perguntas e variáveis (incluindo ciclo, conclusões e duplicatas em opcionais, e camada no `$nome`), garantindo mensagens de erro claras;
 - Testa operações da memória de trabalho (adição, combinação de CF, valor único vs multivalorado, cópia independente);
-- Testa `perguntas_pendentes` v0 e integridade do motor (não importa domínio, interface ou Streamlit).
+- Testa `perguntas_pendentes` v0 e integridade do motor (não importa domínio, interface ou Streamlit);
+- Garante que a interface só usa a API: `app.py` e `interface/` não importam `dominio.indicadores`, `dominio.mercado` nem `yaml` (critério da #10).
 
 ### `test_indicadores.py`
 - Valida os 21 indicadores econômicos e zootécnicos contra uma fazenda de referência conferida à mão em 2 casas decimais;
@@ -47,7 +50,15 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - Confere os preços oficiais da CONAB (`fatos_mercado`) para a UF e mês de referência de cada caso;
 - Confere todos os 21 indicadores econômicos e zootécnicos (`calcular_indicadores`) contra as contas feitas à mão em 2 casas decimais;
 - Valida o enquadramento de Matsunaga et al. (1976) e os sinais de domínio característicos de cada perfil;
-- Atua como contrato executável para as regras de produção (`inferir`) e ponta a ponta (`diagnosticar`).
+- Atua como contrato executável para as regras de produção (`inferir`) e ponta a ponta: o `diagnosticar` chega ao mesmo traço da montagem manual.
+
+### `test_diagnostico.py`
+- Cada fato entra com a sua origem: resposta (`usuario`), CONAB (`externo`, com UF e mês no detalhe), indicador (`calculado`, com a fórmula e os valores) e conclusão (`regra`, com o id);
+- resposta estimada entra com CF 0,7 e derruba a cadeia que depende dela (receita, situação), sem mexer no que não depende (COE);
+- opcional vazio (ausente ou `None`) não vira fato: sem capital investido não há CT, e a fazenda que cobre o COT fica sem situação;
+- sem mês de referência não há fatos de mercado, e a situação sai mesmo assim;
+- chave que não é pergunta da base gera `ValueError`;
+- **na tela:** com `AppTest`, carrega a fazenda-exemplo, avança até a revisão e gera o diagnóstico. O parecer mostra a situação real com CF e regra, e não há mais mock.
 
 ### `test_regras.py`
 - Testa só a base: os fatos entram direto na memória, sem calcular indicadores. A ponta a ponta fica no `test_casos.py`;
@@ -83,6 +94,7 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - **Depois de mexer no `dominio/mercado.py`:** o `test_mercado.py` mostra qual fato mudou.
 - **Depois de mexer nos cálculos de fazendas ou regras:** o `test_casos.py` mostra qual caso divergiu.
 - **Depois de criar ou alterar uma regra:** o `test_regras.py` mostra qual regra deixou de concluir o esperado ou ficou sem caso.
+- **Depois de mexer no `diagnosticar` ou na tela de parecer:** o `test_diagnostico.py` mostra se a memória perdeu origem ou CF, ou se a fazenda-exemplo deixou de chegar ao parecer.
 
 ## Ainda não existe
 - `test_explicacao.py`: testes das explicações "como?" e "por quê?", que chegam com a issue #9 (`fase-2-explicacao-no-motor`).
