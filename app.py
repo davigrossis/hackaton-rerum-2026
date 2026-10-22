@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from dominio.diagnostico import diagnosticar
+from dominio.diagnostico import diagnosticar, validar_respostas
 from interface import formulario as fm
 from interface.estilo import (
     ICONE_APP,
@@ -39,11 +39,17 @@ def _ir_para_com_navegacao(etapa: int) -> None:
 
 
 def _gerar(respostas: dict, estimados: frozenset[str] = frozenset()) -> None:
-    """Gera o diagnóstico e deixa erros explícitos na tela."""
+    """Revalida respostas e deixa erros explícitos na tela."""
+    st.session_state[fm.CHAVE_RESULTADO] = None
     st.session_state[CHAVE_ERRO] = None
+    base = obter_base()
+    erros = validar_respostas(respostas, base.perguntas)
+    if erros:
+        st.session_state[CHAVE_ERRO] = " ".join(erros.values())
+        return
     try:
         st.session_state[fm.CHAVE_RESULTADO] = diagnosticar(
-            respostas, estimados=estimados, base=obter_base()
+            respostas, estimados=estimados, base=base
         )
     except (ValueError, KeyError, OSError) as erro:
         st.session_state[CHAVE_ERRO] = f"Não foi possível gerar o diagnóstico: {erro}"

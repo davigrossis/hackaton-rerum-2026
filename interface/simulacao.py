@@ -11,7 +11,9 @@ from motor.regras import Base
 
 def _situacao(resultado: Resultado) -> str:
     fato = resultado.memoria.valor("situacao_economica")
-    return str(fato.valor).replace("_", " ") if fato is not None else "sem classificação"
+    return (
+        str(fato.valor).replace("_", " ") if fato is not None else "sem classificação"
+    )
 
 
 def renderizar_simulacao(resultado_original: Resultado, base: Base) -> None:

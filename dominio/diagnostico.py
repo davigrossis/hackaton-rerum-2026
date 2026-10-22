@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import math
+import re
 from typing import Any
 
 from dominio.indicadores import calcular_indicadores
 from dominio.mercado import fatos_mercado
 from motor.inferencia import Resultado, inferir
 from motor.memoria import Memoria
-from motor.regras import Base, carregar_base
+from motor.regras import Base, Pergunta, carregar_base
 
 CF_ESTIMADO = 0.7
 LIMITES_SIMULACAO: dict[str, float] = {
@@ -17,6 +19,65 @@ LIMITES_SIMULACAO: dict[str, float] = {
     "producao_litros": 0.20,
 }
 _SO_IDENTIFICACAO = {"uf", "mes_referencia"}
+
+
+def _normalizar_respostas(respostas: dict) -> dict:
+    normalizadas = {}
+    for nome, valor in respostas.items():
+        if isinstance(valor, str):
+            valor = valor.strip()
+            if not valor:
+                continue
+        if valor is not None:
+            normalizadas[nome] = valor
+    return normalizadas
+
+
+def validar_respostas(
+    respostas: dict,
+    perguntas: list[Pergunta] | tuple[Pergunta, ...],
+    *,
+    exigir_obrigatorias: bool = True,
+) -> dict[str, str]:
+    """Valida campos declarados e retorna erros por ID, na ordem das perguntas.
+
+    Não modifica respostas nem converte texto numérico. IDs desconhecidos são
+    rejeitados pelo diagnóstico, antes desta validação dos valores.
+    """
+    respostas = _normalizar_respostas(respostas)
+    erros = {}
+    for p in perguntas:
+        motivo = None
+        if p.id not in respostas:
+            if exigir_obrigatorias and p.obrigatoria:
+                motivo = "falta preencher."
+        else:
+            valor = respostas[p.id]
+            if p.tipo in ("numero", "inteiro"):
+                if (
+                    isinstance(valor, bool)
+                    or not isinstance(valor, (int, float))
+                    or (isinstance(valor, float) and not math.isfinite(valor))
+                ):
+                    motivo = "informe um número finito."
+                elif p.tipo == "inteiro" and valor % 1 != 0:
+                    motivo = "informe um número inteiro."
+                elif p.faixa and not p.faixa[0] <= valor <= p.faixa[1]:
+                    unidade = f" {p.unidade}" if p.unidade else ""
+                    minimo, maximo = (f"{v:g}".replace(".", ",") for v in p.faixa)
+                    motivo = f"informe um valor entre {minimo} e {maximo}{unidade}."
+            elif p.tipo == "escolha":
+                if valor not in (p.opcoes or ()):
+                    motivo = "selecione uma das opções disponíveis."
+            elif p.tipo == "mes" and (
+                not isinstance(valor, str)
+                or re.fullmatch(r"(0[1-9]|1[0-2])/[0-9]{4}", valor) is None
+                or valor.endswith("/0000")
+            ):
+                motivo = "use MM/AAAA, com mês de 01 a 12 e ano de 0001 a 9999."
+        if motivo:
+            erros[p.id] = f"{p.texto}: {motivo}"
+    return erros
 
 
 def _periodo(texto: str) -> tuple[int, int]:
@@ -102,6 +163,20 @@ def diagnosticar(
 ) -> Resultado:
     """Executa diagnóstico, mercado local, indicadores e inferência."""
     base = carregar_base() if base is None else base
+    ids_perguntas = {p.id for p in base.perguntas}
+    sobrando = sorted(set(respostas) - ids_perguntas)
+    if sobrando:
+        raise ValueError(f"Respostas sem pergunta na base: {sobrando}")
+
+    estimados_invalidos = sorted(set(estimados) - ids_perguntas)
+    if estimados_invalidos:
+        raise ValueError(f"Estimados sem pergunta na base: {estimados_invalidos}")
+
+    respostas = _normalizar_respostas(respostas)
+    erros = validar_respostas(respostas, base.perguntas, exigir_obrigatorias=False)
+    if erros:
+        raise ValueError("Respostas inválidas: " + " ".join(erros.values()))
+
     return _executar(respostas, base, _mercado(respostas), estimados)
 
 

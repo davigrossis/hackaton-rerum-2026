@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-import re
 from typing import Any
 
 import streamlit as st
 
+from dominio.diagnostico import validar_respostas
 from interface.exemplo import FAZENDA_EXEMPLO
 from motor.regras import Pergunta, Secao
 
@@ -18,7 +18,6 @@ PREFIXO_CAMPO = "resposta_"
 PREFIXO_ESTIMADO = "estimado_"
 CHAVE_ALCANCADA = "etapa_alcancada"
 CHAVE_NAVEGACAO = "navegacao_etapas"
-PADRAO_MES = re.compile(r"^(0[1-9]|1[0-2])/\d{4}$")
 
 SecaoComPerguntas = tuple[Secao, list[Pergunta]]
 
@@ -175,19 +174,12 @@ def coletar_estimados() -> frozenset[str]:
 def problemas(
     secoes: list[SecaoComPerguntas], respostas: dict[str, Any]
 ) -> list[tuple[int, str]]:
-    """Lista (índice da etapa, mensagem) para obrigatórias ausentes e mês inválido."""
-    achados: list[tuple[int, str]] = []
-    for indice, (_, perguntas) in enumerate(secoes):
-        for p in perguntas:
-            if p.obrigatoria and p.id not in respostas:
-                achados.append((indice, f"{p.texto}: falta preencher."))
-            elif (
-                p.tipo == "mes"
-                and p.id in respostas
-                and not PADRAO_MES.match(str(respostas[p.id]))
-            ):
-                achados.append((indice, f"{p.texto}: use o formato MM/AAAA."))
-    return achados
+    """Lista (índice da etapa, mensagem) usando a validação do diagnóstico."""
+    return [
+        (indice, mensagem)
+        for indice, (_, perguntas) in enumerate(secoes)
+        for mensagem in validar_respostas(respostas, perguntas).values()
+    ]
 
 
 def estados_das_etapas(
@@ -210,7 +202,8 @@ def progresso_obrigatorias(
     secoes: list[SecaoComPerguntas], respostas: dict[str, Any]
 ) -> tuple[int, int]:
     obrigatorias = [p for _, ps in secoes for p in ps if p.obrigatoria]
-    feitas = sum(1 for p in obrigatorias if p.id in respostas)
+    erros = validar_respostas(respostas, obrigatorias)
+    feitas = sum(1 for p in obrigatorias if p.id not in erros)
     return feitas, len(obrigatorias)
 
 
