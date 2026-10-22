@@ -30,12 +30,6 @@ CSS = f"""
 }}
 .el-etapa.ok {{ border-color: {VERDE}; color: {VERDE}; opacity: 1; }}
 .el-etapa.alerta {{ border-color: {FENO}; color: {FENO}; opacity: 1; }}
-.el-mock {{
-    display: inline-block; background: #f3e7b0; color: #5c4a00;
-    border: 1px solid {FENO};
-    padding: .15rem .65rem; border-radius: 6px;
-    font-weight: 700; font-size: .78rem;
-}}
 .el-situacao {{ font-size: 2.2rem; font-weight: 700; margin: .3rem 0; }}
 [data-testid="stPills"] button[aria-label^="! "] {{
     border-color: {FENO};
