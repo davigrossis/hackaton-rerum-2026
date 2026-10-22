@@ -1,4 +1,4 @@
-"""Revisão antes do envio e parecer provisório (mock)."""
+"""Revisão antes do envio e parecer do diagnóstico."""
 
 from __future__ import annotations
 
@@ -8,6 +8,8 @@ from typing import Any
 import streamlit as st
 
 from interface.formulario import SecaoComPerguntas
+from motor.inferencia import Resultado
+from motor.regras import Base, Regra
 
 
 def formatar(valor: Any, unidade: str | None) -> str:
@@ -58,21 +60,61 @@ def renderizar_revisao(
             )  # fmt: skip
 
 
-def renderizar_mock(respostas: dict[str, Any]) -> None:
+def renderizar_parecer(resultado: Resultado, base: Base) -> None:
+    """Parecer v0 (#10): só lê o Resultado do motor; a tela completa é a #13."""
+    regras = {r.id: r for r in base.regras}
+    _situacao(resultado, regras)
+    _outras_conclusoes(resultado, base)
+    _indicadores(resultado, base)
+
+
+def _rotulo(valor: Any) -> str:
+    return str(valor).replace("_", " ")
+
+
+def _situacao(resultado: Resultado, regras: dict[str, Regra]) -> None:
+    fato = resultado.memoria.valor("situacao_economica")
     with st.container(border=True):
+        st.caption("Situação econômica")
+        if fato is None:
+            st.info(
+                "Com os dados informados, o motor não concluiu a situação econômica."
+            )
+            return
         st.markdown(
-            '<span class="el-mock">RESULTADO PROVISÓRIO (MOCK)</span>',
+            f'<div class="el-situacao">{_rotulo(fato.valor)}</div>',
             unsafe_allow_html=True,
         )
-        st.caption("Situação econômica")
-        st.markdown(
-            '<div class="el-situacao">médio prazo</div>', unsafe_allow_html=True
-        )
-        st.write(
-            "Este parecer é só uma demonstração do fluxo da tela. "
-            "A classificação real virá das regras de produção e do motor "
-            "de inferência, com confiança (CF) e explicação de “como?” e "
-            "“por quê?” para cada conclusão."
-        )
-    with st.expander("Dados enviados ao diagnóstico"):
-        st.json(respostas)
+        regra = regras[fato.origens[-1].detalhe]
+        st.write(f"Confiança {fato.cf:.0%} · {regra.id}: {regra.descricao}")
+
+
+def _outras_conclusoes(resultado: Resultado, base: Base) -> None:
+    st.subheader("Outras conclusões")
+    fatos = [
+        fato
+        for var in base.variaveis.values()
+        if var.grupo == "conclusoes" and var.nome != "situacao_economica"
+        for fato in resultado.memoria.valores(var.nome)
+    ]
+    if not fatos:
+        st.caption("Nenhuma outra regra disparou com os dados informados.")
+    for fato in fatos:
+        regras = ", ".join(o.detalhe for o in fato.origens)
+        descricao = base.variaveis[fato.nome].descricao
+        st.write(f"{descricao}: **{_rotulo(fato.valor)}** · {fato.cf:.0%} · {regras}")
+
+
+def _indicadores(resultado: Resultado, base: Base) -> None:
+    st.subheader("Indicadores calculados")
+    calculados = [
+        f for f in resultado.memoria.fatos() if f.origens[-1].tipo == "calculado"
+    ]
+    st.table(
+        {
+            base.variaveis[f.nome].descricao: formatar(
+                f.valor, base.variaveis[f.nome].unidade
+            )
+            for f in calculados
+        }
+    )

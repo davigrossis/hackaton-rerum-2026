@@ -1,9 +1,10 @@
-"""Entrada do Streamlit: assistente em etapas e parecer provisório do EconoLeite."""
+"""Entrada do Streamlit: assistente em etapas e parecer do EconoLeite."""
 
 from __future__ import annotations
 
 import streamlit as st
 
+from dominio.diagnostico import diagnosticar
 from interface import formulario as fm
 from interface.estilo import (
     ICONE_APP,
@@ -12,7 +13,7 @@ from interface.estilo import (
     cabecalho,
     etapas,
 )
-from interface.resultado import renderizar_mock, renderizar_revisao
+from interface.resultado import renderizar_parecer, renderizar_revisao
 from motor.inferencia import perguntas_pendentes
 from motor.memoria import Memoria
 from motor.regras import Base, carregar_base
@@ -35,7 +36,7 @@ def _ir_para_com_navegacao(etapa: int) -> None:
 
 
 def _gerar(respostas: dict) -> None:
-    st.session_state[fm.CHAVE_RESULTADO] = respostas
+    st.session_state[fm.CHAVE_RESULTADO] = diagnosticar(respostas, base=obter_base())
 
 
 def _barra_lateral(secoes: list[fm.SecaoComPerguntas], ids: set[str]) -> None:
@@ -83,7 +84,7 @@ def main() -> None:
     _barra_lateral(secoes, ids)
 
     if st.session_state[fm.CHAVE_RESULTADO] is not None:
-        renderizar_mock(st.session_state[fm.CHAVE_RESULTADO])
+        renderizar_parecer(st.session_state[fm.CHAVE_RESULTADO], base)
         st.button(
             "Editar respostas",
             on_click=_ir_para_com_navegacao,

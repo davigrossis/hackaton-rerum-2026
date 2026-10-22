@@ -209,3 +209,11 @@ def diagnosticar(
     respostas: dict, estimados: frozenset[str] = frozenset(), base: Base | None = None
 ) -> Resultado: ...
 ```
+
+#### Semântica do diagnóstico (#10)
+- **Ordem da memória:** respostas (`origem="usuario"`, na ordem do formulário) → mercado da UF no mês (`origem="externo"`) → indicadores (`origem="calculado"`) → `inferir`.
+- **Detalhe de cada origem:** resposta estimada leva `"estimado"`; fato externo leva `"<fonte>, <UF>, <período>"` (ex.: `CONAB, Preços Agropecuários Mensais por UF (PrecosMensalUF.txt), MG, 09/2026`); calculado leva a fórmula com os valores, vinda de `calcular_indicadores`.
+- **CF (D7):** resposta 1,0, ou 0,7 se estiver em `estimados`; externo 1,0; calculado = menor CF das entradas que ele usou, opcionais incluídos. Uma resposta estimada derruba a confiança de toda a cadeia que depende dela.
+- **Ausências:** resposta vazia ou `None` não vira fato. Sem UF ou sem mês de referência, não há fatos de mercado: o sistema não chuta o último mês. Indicador sem entrada obrigatória não entra.
+- **Erro:** chave de `respostas` que não é pergunta da base gera `ValueError`, para uma conclusão passada como resposta não ser ignorada em silêncio (D8).
+- **Interface:** chama só `diagnosticar` e lê o `Resultado` (memória e traço). Não importa `dominio.indicadores`, `dominio.mercado` nem `yaml`; o `test_interface_so_usa_a_api_do_motor` garante isso.
