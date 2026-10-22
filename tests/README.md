@@ -65,6 +65,7 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - resposta estimada entra com CF 0,7 e derruba a cadeia que depende dela (receita, situação), sem mexer no que não depende (COE);
 - opcional vazio (ausente ou `None`) não vira fato: sem capital investido não há CT, e a fazenda que cobre o COT fica sem situação;
 - sem mês de referência não há fatos de mercado, e a situação sai mesmo assim;
+- diálogo de pendências (#22): com CCS e CPP vazios, ele aparece uma vez; "Continuar diagnóstico" leva ao parecer sem preencher (o opcional não vira fato) ou com o valor preenchido no diálogo, e um diagnóstico novo pergunta de novo;
 - chave que não é pergunta da base gera `ValueError`;
 - **na tela (#10, #13, #16):** com `AppTest`, testa a fazenda-exemplo e os 4 casos conhecidos de referência. O parecer renderiza a situação destacada, cards fazenda × CONAB, gráfico do COE, causas e recomendações por CF, explicações "como cheguei aqui?" e "por que pergunto?" no formulário, expander com toda a memória de trabalho e rodapé com versão e data do snapshot.
 
