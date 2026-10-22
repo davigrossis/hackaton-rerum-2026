@@ -5,7 +5,9 @@ from __future__ import annotations
 import streamlit as st
 
 VERDE = "#2e6b4a"
+AZUL = "#2b5c8f"
 FENO = "#8f7a2e"
+VERMELHO = "#a63a2b"
 NOME_APP = "Datalac"
 ICONE_APP = "📊"
 
@@ -30,7 +32,41 @@ CSS = f"""
 }}
 .el-etapa.ok {{ border-color: {VERDE}; color: {VERDE}; opacity: 1; }}
 .el-etapa.alerta {{ border-color: {FENO}; color: {FENO}; opacity: 1; }}
+
+/* Situação econômica e cards de destaque */
 .el-situacao {{ font-size: 2.2rem; font-weight: 700; margin: .3rem 0; }}
+.el-situacao-card {{
+    padding: 1.2rem;
+    border-radius: 8px;
+    margin: .8rem 0 1.2rem;
+    background: rgba(128, 128, 128, .06);
+    border: 1px solid rgba(128, 128, 128, .2);
+}}
+.el-situacao-lucro {{ border-left: 8px solid {VERDE}; }}
+.el-situacao-medio_prazo {{ border-left: 8px solid {AZUL}; }}
+.el-situacao-curto_prazo {{ border-left: 8px solid {FENO}; }}
+.el-situacao-prejuizo {{ border-left: 8px solid {VERMELHO}; }}
+
+.el-badge {{
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 4px;
+    background: rgba(128, 128, 128, .15);
+    margin-bottom: 0.4rem;
+}}
+
+.el-rodape {{
+    border-top: 1px solid rgba(128, 128, 128, .2);
+    padding-top: 1.5rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    font-size: 0.85rem;
+    opacity: 0.75;
+}}
+
 [data-testid="stPills"] button[aria-label^="! "] {{
     border-color: {FENO};
     color: {FENO};
