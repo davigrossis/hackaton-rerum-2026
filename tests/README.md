@@ -8,6 +8,7 @@ pytest tests/test_mercado.py -q            # só os fatos de mercado
 pytest tests/test_catalogo_mercado.py -v   # catálogo da CONAB, com um caso por produto
 pytest tests/test_inferencia.py -v         # só o motor de inferência
 pytest tests/test_casos.py -v              # os 4 casos conhecidos de fazendas
+pytest tests/test_regras.py -v             # as regras da base real, uma a uma
 ```
 
 ## O que cada arquivo testa
@@ -17,6 +18,7 @@ pytest tests/test_casos.py -v              # os 4 casos conhecidos de fazendas
 | `test_contratos.py` | contratos da base de conhecimento, validações de carga, memória de trabalho e APIs do motor | "Os contratos e regras estão consistentes?" |
 | `test_indicadores.py` | 21 indicadores econômicos e zootécnicos calculados à mão, opcionais, divisores zero e paridade YAML | "Os cálculos econômicos e zootécnicos estão corretos e protegidos?" |
 | `test_casos.py` | os 4 casos conhecidos de fazendas (lucro, médio prazo, curto prazo por alimentação, prejuízo por preço + reprodução) com contas à mão | "O sistema se comporta como esperado nos casos de referência?" |
+| `test_regras.py` | as regras de `conhecimento/regras.yaml`, uma a uma, com os fatos postos direto na memória | "Cada regra conclui o que deve, e só quando deve?" |
 | `test_inferencia.py` | o motor de inferência: premissas, ciclo por camada, resolução de conflito, bloqueio de fato único e CF, com a fazenda de exemplo do guia | "O motor raciocina como o guia descreve?" |
 | `test_mercado.py` | **a saída**: o que `fatos_mercado` devolve | "O sistema calcula os fatos certos?" |
 | `test_catalogo_mercado.py` | **a entrada**: o catálogo `conhecimento/mercado.yaml` e o script de rascunho | "O sistema está lendo os produtos certos da base?" |
@@ -47,6 +49,15 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - Valida o enquadramento de Matsunaga et al. (1976) e os sinais de domínio característicos de cada perfil;
 - Atua como contrato executável para as regras de produção (`inferir`) e ponta a ponta (`diagnosticar`).
 
+### `test_regras.py`
+- Testa só a base: os fatos entram direto na memória, sem calcular indicadores. A ponta a ponta fica no `test_casos.py`;
+- tabela `CASOS`: um caso por regra, com a regra que dispara e a conclusão. **Regra nova precisa de uma linha nela**, e o `test_toda_regra_da_base_tem_caso` falha e aponta a regra que ficou sem caso;
+- limiar: as comparações são estritas, e exatamente no limiar nada é concluído;
+- situação: cada receita cai numa faixa só, e na marca (COE, COT ou CT) vale a faixa de cima. Sem capital investido não há CT: lucro e médio prazo não disparam, e abaixo do COT a situação sai normalmente;
+- par geral × exceção: a R-IND-06 vence a R-IND-05 por ter mais condições, e a R-IND-05 fica em `bloqueadas`; a exceção não esconde o concentrado na receita, que tem conclusão própria;
+- OU: CCS e CPP fora da IN 76 concluem o mesmo fato, com as duas origens;
+- a lista exata das regras com `fonte: "PENDENTE"`. Achou a fonte? Atualize a regra e a lista.
+
 ### `test_inferencia.py`
 - `avaliar_premissas`: fato ausente torna a premissa falsa (inclusive com `!=`), `$nome` usa o menor CF dos dois fatos, valor com CF abaixo de 0,2 conta como ausente, fato com vários valores;
 - `inferir` com a fazenda do guia (`docs/sistema-especialista.md`, seção 8): a cadeia R-IND-01 → R-SIT-03 → R-CAU-01 → R-REC-01 com CFs 1,0 → 1,0 → 0,7 → 0,56; sem o preço da fazenda, só a cadeia dele para; com o preço a CF 0,25, a recomendação não sai;
@@ -71,6 +82,7 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - **Depois de trocar a base da CONAB:** o `test_catalogo_mercado.py` aponta id que mudou de nome e valor fora da faixa, com UF, mês e valor. Se o preço for real, alargue a faixa no `mercado.yaml`.
 - **Depois de mexer no `dominio/mercado.py`:** o `test_mercado.py` mostra qual fato mudou.
 - **Depois de mexer nos cálculos de fazendas ou regras:** o `test_casos.py` mostra qual caso divergiu.
+- **Depois de criar ou alterar uma regra:** o `test_regras.py` mostra qual regra deixou de concluir o esperado ou ficou sem caso.
 
 ## Ainda não existe
 - `test_explicacao.py`: testes das explicações "como?" e "por quê?", que chegam com a issue #9 (`fase-2-explicacao-no-motor`).
