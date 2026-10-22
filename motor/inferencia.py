@@ -251,10 +251,7 @@ def perguntas_pendentes(
             faltantes = [
                 avaliada
                 for premissa, avaliada in zip(regra.se, avaliadas)
-                if (
-                    premissa.fato == pergunta.id
-                    or premissa.alvo == f"${pergunta.id}"
-                )
+                if (premissa.fato == pergunta.id or premissa.alvo == f"${pergunta.id}")
                 and (
                     avaliada.valor_fato is None
                     if premissa.fato == pergunta.id
@@ -265,8 +262,7 @@ def perguntas_pendentes(
                 avaliada
                 for premissa, avaliada in zip(regra.se, avaliadas)
                 if not (
-                    premissa.fato == pergunta.id
-                    or premissa.alvo == f"${pergunta.id}"
+                    premissa.fato == pergunta.id or premissa.alvo == f"${pergunta.id}"
                 )
             ]
             if faltantes and all(avaliada.verdadeira for avaliada in outras):
