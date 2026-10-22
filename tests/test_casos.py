@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from dominio.diagnostico import diagnosticar
 from dominio.indicadores import calcular_indicadores
 from dominio.mercado import fatos_mercado
 from interface.formulario import problemas
@@ -256,14 +257,12 @@ def test_inferencia_regras_no_caso(caso: dict):
         for causa_esp in caso["esperado"].get("causas", []):
             assert causa_esp in causas_obtidas
 
-    # 6. Valida ponta a ponta se diagnosticar estiver disponível (issue #10)
-    try:
-        from dominio.diagnostico import diagnosticar
-
-        res_diag = diagnosticar(caso["entradas"])
-        assert (
-            res_diag.memoria.valor("situacao_economica").valor
-            == caso["esperado"]["situacao_economica"]
-        )
-    except NotImplementedError:
-        pass
+    # 6. Ponta a ponta (#10): diagnosticar chega ao mesmo traço da montagem manual
+    res_diag = diagnosticar(caso["entradas"])
+    assert [c.escolhida for c in res_diag.traco] == [
+        c.escolhida for c in resultado.traco
+    ]
+    assert (
+        res_diag.memoria.valor("situacao_economica").valor
+        == caso["esperado"]["situacao_economica"]
+    )

@@ -426,3 +426,22 @@ def test_motor_nao_importa_dominio():
                 assert not node.module.startswith(
                     ("dominio", "interface", "streamlit")
                 ), f"{py_file.name} não pode importar de {node.module}"
+
+
+def test_interface_so_usa_a_api_do_motor():
+    # Critério da #10: a interface chega ao domínio só pelo diagnosticar e não lê YAML.
+    proibidos = ("dominio.indicadores", "dominio.mercado", "yaml")
+    for py_file in [RAIZ / "app.py", *(RAIZ / "interface").glob("*.py")]:
+        tree = ast.parse(py_file.read_text(encoding="utf-8"), filename=str(py_file))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                nomes = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                nomes = [node.module]
+                nomes += [f"{node.module}.{alias.name}" for alias in node.names]
+            else:
+                continue
+            for nome in nomes:
+                assert not nome.startswith(proibidos), (
+                    f"{py_file.name} não pode importar {nome}"
+                )
