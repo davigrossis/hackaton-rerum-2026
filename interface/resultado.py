@@ -1,4 +1,4 @@
-"""Revisão antes do envio e parecer completo do diagnóstico."""
+"""Revisão antes do envio e parecer completo do diagnóstico com simulação."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ import pandas as pd
 import streamlit as st
 
 from interface.formulario import SecaoComPerguntas
+from interface.simulacao import renderizar_simulacao
 from motor.explicacao import NoComo, como, por_que
 from motor.inferencia import Resultado
 from motor.regras import Base
@@ -126,7 +127,7 @@ def renderizar_revisao(
 
 
 def renderizar_parecer(resultado: Resultado, base: Base) -> None:
-    """Parecer executivo explicável completo (#13)."""
+    """Parecer executivo explicável completo (#13) e simulação (#15)."""
     _situacao(resultado, base)
     st.divider()
     _cards_mercado(resultado, base)
@@ -141,6 +142,8 @@ def renderizar_parecer(resultado: Resultado, base: Base) -> None:
     st.divider()
     _indicadores(resultado, base)
     _memoria_trabalho(resultado, base)
+    st.divider()
+    renderizar_simulacao(resultado, base)
     _rodape(base)
 
 

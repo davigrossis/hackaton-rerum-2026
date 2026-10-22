@@ -10,6 +10,7 @@ pytest tests/test_inferencia.py -v         # só o motor de inferência
 pytest tests/test_casos.py -v              # os 4 casos conhecidos de fazendas
 pytest tests/test_regras.py -v             # as regras da base real, uma a uma
 pytest tests/test_diagnostico.py -v        # a ponta a ponta: diagnóstico e tela
+pytest tests/test_validacao.py -v          # validação de entradas
 ```
 
 ## O que cada arquivo testa
@@ -21,6 +22,7 @@ pytest tests/test_diagnostico.py -v        # a ponta a ponta: diagnóstico e tel
 | `test_casos.py` | os 4 casos conhecidos de fazendas (lucro, médio prazo, curto prazo por alimentação, prejuízo por preço + reprodução) com contas à mão | "O sistema se comporta como esperado nos casos de referência?" |
 | `test_regras.py` | as regras de `conhecimento/regras.yaml`, uma a uma, com os fatos postos direto na memória | "Cada regra conclui o que deve, e só quando deve?" |
 | `test_diagnostico.py` | a ponta a ponta (#10, #13, #16): o `diagnosticar` monta a memória e os 4 casos conhecidos viram parecer executivo real na tela | "As respostas viram um parecer de verdade, na tela?" |
+| `test_validacao.py` | validação e normalização de respostas (#14), rejeição de entradas inválidas e preservação de zero explícito | "O formulário e a API barram dados inconsistentes antes de rodar o motor?" |
 | `test_explicacao.py` | as explicações "como?" e "por quê?" derivadas do traço de inferência | "O motor explica como chegou a cada conclusão e por que pergunta cada dado?" |
 | `test_inferencia.py` | o motor de inferência: premissas, ciclo por camada, resolução de conflito, bloqueio de fato único e CF, com a fazenda de exemplo do guia | "O motor raciocina como o guia descreve?" |
 | `test_mercado.py` | **a saída**: o que `fatos_mercado` devolve | "O sistema calcula os fatos certos?" |
@@ -61,6 +63,12 @@ Os dois arquivos de mercado se completam; nenhum substitui o outro:
 - sem mês de referência não há fatos de mercado, e a situação sai mesmo assim;
 - chave que não é pergunta da base gera `ValueError`;
 - **na tela (#10, #13, #16):** com `AppTest`, testa a fazenda-exemplo e os 4 casos conhecidos de referência. O parecer renderiza a situação destacada, cards fazenda × CONAB, gráfico do COE, causas e recomendações por CF, explicações "como cheguei aqui?" e "por que pergunto?" no formulário, expander com toda a memória de trabalho e rodapé com versão e data do snapshot.
+
+### `test_validacao.py` (#14)
+- Valida os extremos e valores fora das faixas declaradas, obrigatórios, opcionais, inteiros, números não finitos, UF e mês;
+- Confere normalização sem mutação, ausência sem fato, zero explícito, diagnóstico parcial e rejeição antes da consulta ao mercado;
+- Executa o app vazio até a revisão e bloqueia zero vacas injetado fora dos limites do widget; verifica correção e preservação de CF estimado;
+- Verifica revalidação no callback e descarte de resultado anterior. As proteções matemáticas de divisores zero continuam cobertas por `test_indicadores.py`.
 
 ### `test_explicacao.py`
 - Valida as explicações "como?" e "por quê?" derivadas do traço de inferência;
