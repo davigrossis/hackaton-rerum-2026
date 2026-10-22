@@ -2,82 +2,89 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from dominio.indicadores import calcular_indicadores
-from dominio.mercado import Periodo, fatos_mercado
+from dominio.mercado import fatos_mercado
 from motor.inferencia import Resultado, inferir
 from motor.memoria import Memoria
 from motor.regras import Base, carregar_base
 
-CF_ESTIMADO = 0.7  # D7: resposta que o usuário marcou como estimada
+CF_ESTIMADO = 0.7
+LIMITES_SIMULACAO: dict[str, float] = {
+    "preco_leite_fazenda": 0.30,
+    "custo_concentrado": 0.30,
+    "producao_litros": 0.20,
+}
+_SO_IDENTIFICACAO = {"uf", "mes_referencia"}
 
 
-def diagnosticar(
-    respostas: dict,
-    estimados: frozenset[str] = frozenset(),
-    base: Base | None = None,
+def _periodo(texto: str) -> tuple[int, int]:
+    mes, ano = texto.strip().split("/")
+    return int(ano), int(mes)
+
+
+def _mercado(respostas: dict[str, Any]) -> dict[str, dict]:
+    """Sem UF ou mês, não há fatos de mercado; não se chuta o último mês."""
+    uf, mes = respostas.get("uf"), respostas.get("mes_referencia")
+    if uf is None or mes is None:
+        return {}
+    return fatos_mercado(str(uf), _periodo(str(mes)))
+
+
+def _executar(
+    respostas: dict[str, Any],
+    base: Base,
+    externos: dict[str, dict],
+    estimados: frozenset[str],
 ) -> Resultado:
-    """Orquestrador do diagnóstico completo da fazenda leiteira.
-
-    respostas: dicionário com {nome_variavel: valor}; campos ausentes ou None não viram fatos.
-    estimados: conjunto de variáveis marcadas com incerteza pelo usuário (entram com CF=0.7).
-    base: base de conhecimento (padrão: carregada de conhecimento/).
-
-    Ordem de execução:
-    1. Memória de trabalho <- respostas informadas (origem='usuario', CF 1.0 ou 0.7)
-    2. Consulta fatos_mercado(uf, mes) da CONAB (origem='externo')
-    3. Calcula indicadores em dominio/indicadores.py (origem='calculado')
-    4. Dispara a inferência no motor (inferir) e retorna o Resultado com memória e traço.
-
-    Chave de resposta que não é pergunta da base gera ValueError.
-    """
-    base = carregar_base() if base is None else base
-    ids_perguntas = {p.id for p in base.perguntas}
-    sobrando = sorted(set(respostas) - ids_perguntas)
-    if sobrando:
-        raise ValueError(f"Respostas sem pergunta na base: {sobrando}")
-
-    estimados_invalidos = sorted(set(estimados) - ids_perguntas)
-    if estimados_invalidos:
-        raise ValueError(f"Estimados sem pergunta na base: {estimados_invalidos}")
-
     memoria = Memoria()
-    cfs: dict[str, float] = {}  # CF de cada fato, herdado pelos calculados (D7)
+    cfs: dict[str, float] = {}
+    ids_perguntas = {p.id for p in base.perguntas}
+    for nome in respostas:
+        if nome not in ids_perguntas:
+            raise ValueError(
+                f"Respostas sem pergunta na base: {sorted(set(respostas) - ids_perguntas)}"
+            )
+    for nome in estimados:
+        if nome not in ids_perguntas:
+            raise ValueError(
+                f"Estimados sem pergunta na base: {sorted(set(estimados) - ids_perguntas)}"
+            )
 
-    # 1. Respostas, na ordem do formulário
     for pergunta in base.perguntas:
         valor = respostas.get(pergunta.id)
         if valor is None:
             continue
-        estimado = pergunta.id in estimados
-        cfs[pergunta.id] = CF_ESTIMADO if estimado else 1.0
+        cf = CF_ESTIMADO if pergunta.id in estimados else 1.0
+        cfs[pergunta.id] = cf
         memoria.adicionar(
             pergunta.id,
             valor,
-            cf=cfs[pergunta.id],
+            cf=cf,
             origem="usuario",
-            detalhe="estimado" if estimado else "",
+            detalhe="estimado" if cf < 1.0 else "",
         )
 
-    # 2. Mercado da UF no mês (CONAB)
-    externos = _mercado(respostas)
     for nome, fato in externos.items():
-        cfs[nome] = 1.0
+        cf = 1.0
+        cfs[nome] = cf
         memoria.adicionar(
             nome,
             fato["valor"],
+            cf=cf,
             origem="externo",
-            detalhe=f"{fato['fonte']}, {respostas['uf']}, {fato['periodo']}",
+            detalhe=f"{fato['fonte']}, {respostas.get('uf', '')}, {fato['periodo']}",
         )
 
-    # 3. Indicadores: o CF é o menor CF das entradas usadas (D7)
     numericas = {
         p.id: respostas[p.id]
         for p in base.perguntas
         if p.tipo in ("numero", "inteiro") and respostas.get(p.id) is not None
     }
     precos = {nome: fato["valor"] for nome, fato in externos.items()}
-    for nome, indicador in calcular_indicadores(numericas, precos).items():
-        cfs[nome] = min(cfs[e] for e in indicador["entradas"])
+    for nome, indicador in calcular_indicadores(numericas, precos, base).items():
+        cfs[nome] = min(cfs.get(entrada, 1.0) for entrada in indicador["entradas"])
         memoria.adicionar(
             nome,
             indicador["valor"],
@@ -85,20 +92,59 @@ def diagnosticar(
             origem="calculado",
             detalhe=indicador["detalhe"],
         )
-
-    # 4. Motor
     return inferir(base, memoria)
 
 
-def _mercado(respostas: dict) -> dict[str, dict]:
-    """Sem UF ou sem mês, não há fatos de mercado (não se chuta o último mês)."""
-    uf, mes = respostas.get("uf"), respostas.get("mes_referencia")
-    if uf is None or mes is None:
-        return {}
-    return fatos_mercado(uf, _periodo(mes))
+def diagnosticar(
+    respostas: dict,
+    estimados: frozenset[str] = frozenset(),
+    base: Base | None = None,
+) -> Resultado:
+    """Executa diagnóstico, mercado local, indicadores e inferência."""
+    base = carregar_base() if base is None else base
+    return _executar(respostas, base, _mercado(respostas), estimados)
 
 
-def _periodo(mes_referencia: str) -> Periodo:
-    """'09/2026' -> (2026, 9), o formato de período do dominio/mercado.py."""
-    mes, ano = mes_referencia.split("/")
-    return int(ano), int(mes)
+def _validar_variacoes(variacoes: dict[str, float]) -> None:
+    desconhecidas = set(variacoes) - set(LIMITES_SIMULACAO)
+    if desconhecidas:
+        raise ValueError(f"Variáveis não simuláveis: {sorted(desconhecidas)}")
+    for nome, fracao in variacoes.items():
+        if abs(fracao) > LIMITES_SIMULACAO[nome] + 1e-9:
+            raise ValueError(f"{nome}: variação fora do limite ({fracao:+.0%})")
+
+
+def _reconstruir_entradas(
+    resultado: Resultado,
+) -> tuple[dict[str, Any], dict[str, dict], frozenset[str]]:
+    respostas: dict[str, Any] = {}
+    externos: dict[str, dict] = {}
+    estimados: set[str] = set()
+    for fato in resultado.memoria.fatos():
+        origem = fato.origens[0]
+        if origem.tipo == "usuario":
+            respostas[fato.nome] = fato.valor
+            if fato.cf < 1.0:
+                estimados.add(fato.nome)
+        elif origem.tipo == "externo":
+            externos[fato.nome] = {
+                "valor": float(fato.valor),
+                "fonte": origem.detalhe,
+                "periodo": "",
+            }
+    return respostas, externos, frozenset(estimados)
+
+
+def simular(
+    resultado_original: Resultado,
+    variacoes: dict[str, float],
+    base: Base | None = None,
+) -> Resultado:
+    """Recalcula um cenário sem modificar o parecer original."""
+    _validar_variacoes(variacoes)
+    base = carregar_base() if base is None else base
+    respostas, externos, estimados = _reconstruir_entradas(resultado_original)
+    for nome, fracao in variacoes.items():
+        if nome in respostas:
+            respostas[nome] = float(respostas[nome]) * (1 + fracao)
+    return _executar(respostas, base, externos, estimados)
