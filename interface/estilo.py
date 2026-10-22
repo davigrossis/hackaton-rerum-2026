@@ -59,6 +59,7 @@ def cabecalho() -> None:
         unsafe_allow_html=True,
     )
 
+
 def etapas(titulos: list[str], atual: int, estados: list[str]) -> int | None:
     """Trilha clicável. Devolve o índice escolhido (ou None se desmarcou)."""
 

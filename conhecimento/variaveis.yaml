@@ -238,6 +238,13 @@ conclusoes:
     unico: true
     valores: [alto, adequado]
 
+  - nome: concentrado_receita_nivel
+    descricao: Avaliação do peso da compra de concentrado sobre a receita total
+    camada: indicador
+    tipo: categoria
+    unico: true
+    valores: [alto, adequado]
+
   - nome: lactacao_nivel
     descricao: Eficiência reprodutiva avaliada pela porcentagem de vacas em lactação
     camada: indicador

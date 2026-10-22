@@ -139,9 +139,12 @@ def problemas(
         for p in perguntas:
             if p.obrigatoria and p.id not in respostas:
                 achados.append((indice, f"{p.texto}: falta preencher."))
-            elif p.tipo == "mes" and p.id in respostas:
-                if not PADRAO_MES.match(str(respostas[p.id])):
-                    achados.append((indice, f"{p.texto}: use o formato MM/AAAA."))
+            elif (
+                p.tipo == "mes"
+                and p.id in respostas
+                and not PADRAO_MES.match(str(respostas[p.id]))
+            ):
+                achados.append((indice, f"{p.texto}: use o formato MM/AAAA."))
     return achados
 
 
