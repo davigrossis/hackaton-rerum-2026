@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from dominio.mercado import fatos_mercado
-from motor.inferencia import perguntas_pendentes
+from motor.inferencia import inferir, perguntas_pendentes
 from motor.memoria import Memoria
 from motor.regras import carregar_base
 
@@ -409,6 +409,22 @@ def test_perguntas_pendentes_v0():
     assert [p.id for p in pendentes_depois] == [
         "preco_leite_fazenda",
         "producao_litros",
+    ]
+
+
+def test_perguntas_pendentes_destravam_regra_de_ccs():
+    base = carregar_base()
+    memoria = Memoria()
+    resultado = inferir(base, memoria)
+
+    pendentes = perguntas_pendentes(base, resultado.memoria, resultado)
+    assert "ccs" in [p.id for p in pendentes]
+
+    memoria.adicionar("ccs", 600.0)
+    resultado_com_ccs = inferir(base, memoria)
+    assert "ccs" not in [
+        p.id
+        for p in perguntas_pendentes(base, resultado_com_ccs.memoria, resultado_com_ccs)
     ]
 
 
