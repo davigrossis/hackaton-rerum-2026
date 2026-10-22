@@ -240,4 +240,36 @@ def perguntas_pendentes(
     v0 (issue #2): devolve perguntas cuja variável não está na memória, na ordem do arquivo.
     v1 (issue #26): com resultado, seleciona só as que destravam regras quase satisfeitas.
     """
-    return [p for p in base.perguntas if not memoria.tem(p.id)]
+    ausentes = [p for p in base.perguntas if not memoria.tem(p.id)]
+    if resultado is None:
+        return ausentes
+
+    pendentes: list[Pergunta] = []
+    for pergunta in ausentes:
+        for regra in base.regras_que_usam(pergunta.id):
+            avaliadas = avaliar_premissas(regra, resultado.memoria)
+            faltantes = [
+                avaliada
+                for premissa, avaliada in zip(regra.se, avaliadas)
+                if (
+                    premissa.fato == pergunta.id
+                    or premissa.alvo == f"${pergunta.id}"
+                )
+                and (
+                    avaliada.valor_fato is None
+                    if premissa.fato == pergunta.id
+                    else avaliada.valor_alvo is None
+                )
+            ]
+            outras = [
+                avaliada
+                for premissa, avaliada in zip(regra.se, avaliadas)
+                if not (
+                    premissa.fato == pergunta.id
+                    or premissa.alvo == f"${pergunta.id}"
+                )
+            ]
+            if faltantes and all(avaliada.verdadeira for avaliada in outras):
+                pendentes.append(pergunta)
+                break
+    return pendentes

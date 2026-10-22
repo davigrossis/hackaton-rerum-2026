@@ -14,7 +14,8 @@ from interface.estilo import (
     etapas,
 )
 from interface.resultado import renderizar_parecer, renderizar_revisao
-from motor.inferencia import perguntas_pendentes
+from motor.explicacao import por_que
+from motor.inferencia import Resultado, perguntas_pendentes
 from motor.memoria import Memoria
 from motor.regras import Base, carregar_base
 
@@ -85,6 +86,36 @@ def _navegacao(atual: int, ultima: int) -> None:
         )
 
 
+def _dialogo_pendencias(
+    base: Base, resultado: Resultado, perguntas: list[fm.Pergunta]
+) -> None:
+    """Pergunta dados opcionais que destravam regras quase satisfeitas."""
+    st.subheader("O motor precisa de mais um dado")
+    st.write(
+        "Essas informações são opcionais, mas podem completar uma regra que já "
+        "está quase satisfeita."
+    )
+    for pergunta in perguntas:
+        motivos = [
+            motivo
+            for motivo in por_que(base, pergunta.id, resultado)
+            if motivo.esperando
+        ]
+        with st.container(border=True):
+            st.markdown(f"**{pergunta.texto}**")
+            for motivo in motivos:
+                st.info(
+                    f"Porque a regra **{motivo.regra.id}** pode concluir "
+                    f"{motivo.regra.descricao.lower()}."
+                )
+            fm._renderizar_pergunta(pergunta, st.session_state[fm.CHAVE_DADOS])
+
+    fm.sincronizar_respostas(perguntas)
+    if st.button("Continuar diagnóstico", type="primary"):
+        _gerar(fm.coletar_respostas(), fm.coletar_estimados())
+        st.rerun()
+
+
 def main() -> None:
     st.set_page_config(page_title=NOME_APP, page_icon=ICONE_APP, layout="wide")
     aplicar_estilo()
@@ -99,8 +130,13 @@ def main() -> None:
     fm.sincronizar_respostas(perguntas)
     _barra_lateral(secoes, ids)
 
-    if st.session_state[fm.CHAVE_RESULTADO] is not None:
-        renderizar_parecer(st.session_state[fm.CHAVE_RESULTADO], base)
+    resultado = st.session_state[fm.CHAVE_RESULTADO]
+    if resultado is not None:
+        pendentes = perguntas_pendentes(base, resultado.memoria, resultado)
+        if pendentes:
+            _dialogo_pendencias(base, resultado, pendentes)
+            return
+        renderizar_parecer(resultado, base)
         st.button(
             "Editar respostas",
             on_click=_ir_para_com_navegacao,
