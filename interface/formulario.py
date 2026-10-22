@@ -11,9 +11,11 @@ from interface.exemplo import FAZENDA_EXEMPLO
 from motor.regras import Pergunta, Secao
 
 CHAVE_DADOS = "dados"
+CHAVE_ESTIMADOS = "estimados"
 CHAVE_ETAPA = "etapa"
 CHAVE_RESULTADO = "resultado"
 PREFIXO_CAMPO = "resposta_"
+PREFIXO_ESTIMADO = "estimado_"
 CHAVE_ALCANCADA = "etapa_alcancada"
 CHAVE_NAVEGACAO = "navegacao_etapas"
 PADRAO_MES = re.compile(r"^(0[1-9]|1[0-2])/\d{4}$")
@@ -21,8 +23,14 @@ PADRAO_MES = re.compile(r"^(0[1-9]|1[0-2])/\d{4}$")
 SecaoComPerguntas = tuple[Secao, list[Pergunta]]
 
 
+def pode_estimar(pergunta: Pergunta) -> bool:
+    """Apenas grandezas numéricas (numero/inteiro) podem ser marcadas como estimadas."""
+    return pergunta.tipo in ("numero", "inteiro")
+
+
 def iniciar_estado() -> None:
     st.session_state.setdefault(CHAVE_DADOS, {})
+    st.session_state.setdefault(CHAVE_ESTIMADOS, set())
     st.session_state.setdefault(CHAVE_ETAPA, 0)
     st.session_state.setdefault(CHAVE_ALCANCADA, 0)
     st.session_state.setdefault(CHAVE_NAVEGACAO, 0)
@@ -33,8 +41,14 @@ def _chave(pergunta: Pergunta) -> str:
     return f"{PREFIXO_CAMPO}{pergunta.id}"
 
 
+def _chave_estimado(pergunta: Pergunta) -> str:
+    return f"{PREFIXO_ESTIMADO}{pergunta.id}"
+
+
 def _limpar_widgets() -> None:
-    for chave in [k for k in st.session_state if k.startswith(PREFIXO_CAMPO)]:
+    for chave in [
+        k for k in st.session_state if k.startswith((PREFIXO_CAMPO, PREFIXO_ESTIMADO))
+    ]:
         del st.session_state[chave]
 
 
@@ -44,6 +58,7 @@ def carregar_exemplo(ids_validos: set[str]) -> None:
     st.session_state[CHAVE_DADOS] = {
         k: v for k, v in FAZENDA_EXEMPLO.items() if k in ids_validos
     }
+    st.session_state[CHAVE_ESTIMADOS] = set()
     st.session_state[CHAVE_ETAPA] = 0
     st.session_state[CHAVE_ALCANCADA] = 0
     st.session_state[CHAVE_NAVEGACAO] = 0
@@ -53,6 +68,7 @@ def carregar_exemplo(ids_validos: set[str]) -> None:
 def limpar_respostas() -> None:
     _limpar_widgets()
     st.session_state[CHAVE_DADOS] = {}
+    st.session_state[CHAVE_ESTIMADOS] = set()
     st.session_state[CHAVE_ETAPA] = 0
     st.session_state[CHAVE_ALCANCADA] = 0
     st.session_state[CHAVE_NAVEGACAO] = 0
@@ -62,16 +78,22 @@ def limpar_respostas() -> None:
 def _semear(pergunta: Pergunta, dados: dict[str, Any]) -> None:
     """Devolve ao widget o valor guardado (widgets fora da tela são descartados)."""
     chave = _chave(pergunta)
-    if chave in st.session_state or pergunta.id not in dados:
-        return
-    valor = dados[pergunta.id]
-    if pergunta.tipo == "inteiro":
-        valor = int(valor)
-    elif pergunta.tipo == "numero":
-        valor = float(valor)
-    if pergunta.tipo == "escolha" and valor not in (pergunta.opcoes or ()):
-        return
-    st.session_state[chave] = valor
+    if chave not in st.session_state and pergunta.id in dados:
+        valor = dados[pergunta.id]
+        if pergunta.tipo == "inteiro":
+            valor = int(valor)
+        elif pergunta.tipo == "numero":
+            valor = float(valor)
+        if pergunta.tipo != "escolha" or valor in (pergunta.opcoes or ()):
+            st.session_state[chave] = valor
+
+    if pode_estimar(pergunta):
+        chave_est = _chave_estimado(pergunta)
+        if chave_est not in st.session_state:
+            estimados = st.session_state.get(CHAVE_ESTIMADOS, set())
+            st.session_state[chave_est] = (
+                pergunta.id in estimados and pergunta.id in dados
+            )
 
 
 def _renderizar_pergunta(pergunta: Pergunta, dados: dict[str, Any]) -> None:
@@ -114,6 +136,19 @@ def _renderizar_pergunta(pergunta: Pergunta, dados: dict[str, Any]) -> None:
     unidade = f"{pergunta.unidade} · " if pergunta.unidade else ""
     st.caption(f"{unidade}{situacao}")
 
+    if pode_estimar(pergunta):
+        estimado = st.checkbox(
+            "Valor estimado",
+            key=_chave_estimado(pergunta),
+            help="Marque se este número for uma estimativa aproximada (entra com confiança de 70%).",
+        )
+        estimados = st.session_state.get(CHAVE_ESTIMADOS, set())
+        if estimado and pergunta.id in dados:
+            estimados.add(pergunta.id)
+        else:
+            estimados.discard(pergunta.id)
+        st.session_state[CHAVE_ESTIMADOS] = estimados
+
 
 def renderizar_etapa(secao: Secao, perguntas: list[Pergunta]) -> None:
     dados = st.session_state[CHAVE_DADOS]
@@ -128,6 +163,13 @@ def renderizar_etapa(secao: Secao, perguntas: list[Pergunta]) -> None:
 def coletar_respostas() -> dict[str, Any]:
     """Cópia das respostas; campos vazios nunca entram (nada vira zero)."""
     return dict(st.session_state[CHAVE_DADOS])
+
+
+def coletar_estimados() -> frozenset[str]:
+    """Retorna o conjunto imutável de IDs de perguntas preenchidas e marcadas como estimadas."""
+    dados = st.session_state.get(CHAVE_DADOS, {})
+    estimados = st.session_state.get(CHAVE_ESTIMADOS, set())
+    return frozenset(cid for cid in estimados if cid in dados)
 
 
 def problemas(
@@ -179,14 +221,22 @@ def sincronizar_respostas(perguntas: list[Pergunta]) -> None:
     que foi digitado em uma seção não se perca ao navegar.
     """
     dados = st.session_state[CHAVE_DADOS]
+    estimados = st.session_state.setdefault(CHAVE_ESTIMADOS, set())
     for pergunta in perguntas:
         chave = _chave(pergunta)
-        if chave not in st.session_state:
-            continue
-        valor = st.session_state[chave]
-        if isinstance(valor, str):
-            valor = valor.strip()
-        if valor is None or valor == "":
-            dados.pop(pergunta.id, None)
-        else:
-            dados[pergunta.id] = valor
+        if chave in st.session_state:
+            valor = st.session_state[chave]
+            if isinstance(valor, str):
+                valor = valor.strip()
+            if valor is None or valor == "":
+                dados.pop(pergunta.id, None)
+            else:
+                dados[pergunta.id] = valor
+
+        if pode_estimar(pergunta):
+            chave_est = _chave_estimado(pergunta)
+            if chave_est in st.session_state:
+                if bool(st.session_state[chave_est]) and pergunta.id in dados:
+                    estimados.add(pergunta.id)
+                else:
+                    estimados.discard(pergunta.id)

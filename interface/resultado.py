@@ -28,6 +28,7 @@ def renderizar_revisao(
     respostas: dict[str, Any],
     achados: list[tuple[int, str]],
     ir_para: Callable[[int], None],
+    estimados: frozenset[str] = frozenset(),
 ) -> None:
     st.subheader("Revise antes de gerar")
     if achados:
@@ -47,12 +48,15 @@ def renderizar_revisao(
 
     for indice, (secao, perguntas) in enumerate(secoes):
         with st.expander(secao.titulo, expanded=False):
-            linhas = {
-                p.texto: formatar(respostas[p.id], p.unidade)
-                if p.id in respostas
-                else "— não informado"
-                for p in perguntas
-            }
+            linhas = {}
+            for p in perguntas:
+                if p.id in respostas:
+                    valor_str = formatar(respostas[p.id], p.unidade)
+                    if p.id in estimados:
+                        valor_str = f"{valor_str} (estimado · CF 70%)"
+                else:
+                    valor_str = "— não informado"
+                linhas[p.texto] = valor_str
             st.table(linhas)
             st.button(
                 "Editar esta seção", key=f"editar_{indice}",
@@ -110,11 +114,11 @@ def _indicadores(resultado: Resultado, base: Base) -> None:
     calculados = [
         f for f in resultado.memoria.fatos() if f.origens[-1].tipo == "calculado"
     ]
-    st.table(
-        {
-            base.variaveis[f.nome].descricao: formatar(
-                f.valor, base.variaveis[f.nome].unidade
-            )
-            for f in calculados
-        }
-    )
+    linhas = {}
+    for f in calculados:
+        desc = base.variaveis[f.nome].descricao
+        valor_fmt = formatar(f.valor, base.variaveis[f.nome].unidade)
+        if f.cf < 1.0:
+            valor_fmt = f"{valor_fmt} (CF {f.cf:.0%})"
+        linhas[desc] = valor_fmt
+    st.table(linhas)

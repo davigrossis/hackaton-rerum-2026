@@ -31,9 +31,14 @@ def diagnosticar(
     Chave de resposta que não é pergunta da base gera ValueError.
     """
     base = carregar_base() if base is None else base
-    sobrando = sorted(set(respostas) - {p.id for p in base.perguntas})
+    ids_perguntas = {p.id for p in base.perguntas}
+    sobrando = sorted(set(respostas) - ids_perguntas)
     if sobrando:
         raise ValueError(f"Respostas sem pergunta na base: {sobrando}")
+
+    estimados_invalidos = sorted(set(estimados) - ids_perguntas)
+    if estimados_invalidos:
+        raise ValueError(f"Estimados sem pergunta na base: {estimados_invalidos}")
 
     memoria = Memoria()
     cfs: dict[str, float] = {}  # CF de cada fato, herdado pelos calculados (D7)

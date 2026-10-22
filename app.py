@@ -35,8 +35,10 @@ def _ir_para_com_navegacao(etapa: int) -> None:
     _ir_para(etapa)
 
 
-def _gerar(respostas: dict) -> None:
-    st.session_state[fm.CHAVE_RESULTADO] = diagnosticar(respostas, base=obter_base())
+def _gerar(respostas: dict, estimados: frozenset[str] = frozenset()) -> None:
+    st.session_state[fm.CHAVE_RESULTADO] = diagnosticar(
+        respostas, estimados=estimados, base=obter_base()
+    )
 
 
 def _barra_lateral(secoes: list[fm.SecaoComPerguntas], ids: set[str]) -> None:
@@ -111,10 +113,11 @@ def main() -> None:
         fm.renderizar_etapa(secao, perguntas_secao)
     else:
         achados = fm.problemas(secoes, respostas)
-        renderizar_revisao(secoes, respostas, achados, _ir_para)
+        estimados = fm.coletar_estimados()
+        renderizar_revisao(secoes, respostas, achados, _ir_para, estimados)
         st.button(
             "Gerar diagnóstico", type="primary", disabled=bool(achados),
-            on_click=_gerar, args=(respostas,),
+            on_click=_gerar, args=(respostas, estimados),
         )  # fmt: skip
 
     _navegacao(atual, revisao)

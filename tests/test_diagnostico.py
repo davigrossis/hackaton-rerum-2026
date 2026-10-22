@@ -1,4 +1,4 @@
-"""Testes da ponta a ponta (#10): respostas -> mercado -> indicadores -> motor -> tela."""
+"""Testes da ponta a ponta (#10, #16): respostas -> mercado -> indicadores -> motor -> tela."""
 
 from pathlib import Path
 
@@ -7,7 +7,7 @@ import yaml
 from streamlit.testing.v1 import AppTest
 
 from dominio.diagnostico import diagnosticar
-from interface.formulario import CHAVE_RESULTADO
+from interface.formulario import CHAVE_ESTIMADOS, CHAVE_RESULTADO
 from motor.inferencia import Resultado
 from motor.regras import carregar_base
 
@@ -80,6 +80,11 @@ def test_resposta_sem_pergunta_na_base_da_erro():
         diagnosticar({**CASO_LUCRO, "preco_leite": 3.1})
 
 
+def test_diagnosticar_rejeita_estimado_desconhecido():
+    with pytest.raises(ValueError, match=r"sem pergunta na base: \['inexistente'\]"):
+        diagnosticar(CASO_LUCRO, estimados=frozenset({"inexistente"}))
+
+
 def _clicar(botoes, rotulo: str) -> None:
     next(b for b in botoes if b.label == rotulo).click().run()
 
@@ -100,3 +105,69 @@ def test_fazenda_exemplo_gera_parecer_real_na_tela():
     assert '<div class="el-situacao">lucro</div>' in tela
     assert "Confiança 100% · R-SIT-01" in tela
     assert "MOCK" not in tela
+
+
+def test_app_entrada_estimada_reduz_confianca_ponta_a_ponta():
+    app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
+    _clicar(app.sidebar.button, "Carregar fazenda-exemplo")
+
+    # Navega até a seção 2 (Faturamento e Receitas), onde fica preco_leite_fazenda
+    _clicar(app.button, "Avançar")  # etapa 1 (Rebanho)
+    _clicar(app.button, "Avançar")  # etapa 2 (Receitas)
+
+    # Marca o checkbox de preco_leite_fazenda como estimado
+    cb = next(c for c in app.checkbox if c.key == "estimado_preco_leite_fazenda")
+    cb.check().run()
+    assert cb.value is True
+
+    # Avança pelas 4 seções restantes até a Revisão (etapa 6)
+    for _ in range(4):
+        _clicar(app.button, "Avançar")
+
+    # Na revisão, preco_leite_fazenda deve constar como estimado
+    assert "preco_leite_fazenda" in app.session_state[CHAVE_ESTIMADOS]
+
+    # Verifica se a tabela de revisão traz o sufixo de estimado
+    tabelas_revisao = " ".join(str(t.value.to_dict()) for t in app.table)
+    assert "(estimado · CF 70%)" in tabelas_revisao
+
+    # Clica em Gerar diagnóstico
+    _clicar(app.button, "Gerar diagnóstico")
+    assert not app.exception
+
+    resultado = app.session_state[CHAVE_RESULTADO]
+    assert isinstance(resultado, Resultado)
+    assert resultado.memoria.valor("preco_leite_fazenda").cf == pytest.approx(0.7)
+    assert resultado.memoria.valor("situacao_economica").cf == pytest.approx(0.7)
+
+    tela = " ".join(m.value for m in app.markdown)
+    assert "Confiança 70% · R-SIT-01" in tela
+
+    tabelas_parecer = " ".join(str(t.value.to_dict()) for t in app.table)
+    assert "(CF 70%)" in tabelas_parecer
+
+
+def test_app_limpar_respostas_zera_estimados():
+    app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
+    _clicar(app.sidebar.button, "Carregar fazenda-exemplo")
+    _clicar(app.button, "Avançar")  # etapa 1 (Rebanho)
+
+    cb = next(c for c in app.checkbox if c.key == "estimado_vacas_lactacao")
+    cb.check().run()
+    assert "vacas_lactacao" in app.session_state[CHAVE_ESTIMADOS]
+
+    _clicar(app.sidebar.button, "Limpar respostas")
+    assert app.session_state[CHAVE_ESTIMADOS] == set()
+
+
+def test_app_carregar_exemplo_zera_estimados():
+    app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
+    _clicar(app.sidebar.button, "Carregar fazenda-exemplo")
+    _clicar(app.button, "Avançar")  # etapa 1 (Rebanho)
+
+    cb = next(c for c in app.checkbox if c.key == "estimado_vacas_lactacao")
+    cb.check().run()
+    assert "vacas_lactacao" in app.session_state[CHAVE_ESTIMADOS]
+
+    _clicar(app.sidebar.button, "Carregar fazenda-exemplo")
+    assert app.session_state[CHAVE_ESTIMADOS] == set()
