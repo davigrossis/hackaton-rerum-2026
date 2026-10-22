@@ -140,9 +140,7 @@ def test_callback_revalida_e_descarta_resultado_anterior(monkeypatch):
     import app as entrada
 
     estado = {"resultado": object()}
-    mensagens = []
     monkeypatch.setattr(entrada.st, "session_state", estado)
-    monkeypatch.setattr(entrada.st, "error", mensagens.append)
     monkeypatch.setattr(entrada, "obter_base", lambda: BASE)
 
     def nao_diagnosticar(*args, **kwargs):
@@ -151,4 +149,4 @@ def test_callback_revalida_e_descarta_resultado_anterior(monkeypatch):
     monkeypatch.setattr(entrada, "diagnosticar", nao_diagnosticar)
     entrada._gerar({"vacas_lactacao": 0})
     assert estado["resultado"] is None
-    assert any("entre 1 e 5000" in m for m in mensagens)
+    assert "entre 1 e 5000" in estado[entrada.CHAVE_ERRO]

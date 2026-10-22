@@ -1,4 +1,4 @@
-"""Revisão antes do envio e parecer do diagnóstico."""
+"""Revisão antes do envio e parecer com simulação "e se?"."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from typing import Any
 import streamlit as st
 
 from interface.formulario import SecaoComPerguntas
+from interface.simulacao import renderizar_simulacao
 from motor.inferencia import Resultado
 from motor.regras import Base, Regra
 
@@ -40,9 +41,11 @@ def renderizar_revisao(
             colunas = st.columns([4, 1])
             colunas[0].write(f"• {mensagem}")
             colunas[1].button(
-                "Corrigir", key=f"corrigir_{indice}_{mensagem}",
-                on_click=ir_para, args=(indice,),
-            )  # fmt: skip
+                "Corrigir",
+                key=f"corrigir_{indice}_{mensagem}",
+                on_click=ir_para,
+                args=(indice,),
+            )
     else:
         st.success("Tudo certo. Confira os valores e gere o diagnóstico.")
 
@@ -59,17 +62,20 @@ def renderizar_revisao(
                 linhas[p.texto] = valor_str
             st.table(linhas)
             st.button(
-                "Editar esta seção", key=f"editar_{indice}",
-                on_click=ir_para, args=(indice,),
-            )  # fmt: skip
+                "Editar esta seção",
+                key=f"editar_{indice}",
+                on_click=ir_para,
+                args=(indice,),
+            )
 
 
 def renderizar_parecer(resultado: Resultado, base: Base) -> None:
-    """Parecer v0 (#10): só lê o Resultado do motor; a tela completa é a #13."""
+    """Exibe o parecer completo e, em seguida, a simulação."""
     regras = {r.id: r for r in base.regras}
     _situacao(resultado, regras)
     _outras_conclusoes(resultado, base)
     _indicadores(resultado, base)
+    renderizar_simulacao(resultado, base)
 
 
 def _rotulo(valor: Any) -> str:
@@ -89,8 +95,11 @@ def _situacao(resultado: Resultado, regras: dict[str, Regra]) -> None:
             f'<div class="el-situacao">{_rotulo(fato.valor)}</div>',
             unsafe_allow_html=True,
         )
-        regra = regras[fato.origens[-1].detalhe]
-        st.write(f"Confiança {fato.cf:.0%} · {regra.id}: {regra.descricao}")
+        regra = regras.get(fato.origens[-1].detalhe)
+        if regra is not None:
+            st.write(f"Confiança {fato.cf:.0%} · {regra.id}: {regra.descricao}")
+        else:
+            st.write(f"Confiança {fato.cf:.0%}")
 
 
 def _outras_conclusoes(resultado: Resultado, base: Base) -> None:
