@@ -20,6 +20,8 @@
 #     2) Falha reprodutiva grave: 30 vacas em lactação de um rebanho total de 50
 #        pct_vacas_lactacao = (30 / 50) * 100 = 60.00% (alerta severo < 70-75%)
 #        litros_vaca_dia = 9000 / (30 * 30) = 10.00 L/dia
+#     3) Escala baixa (#12): litros_dia_homem = (9000 / 30) / 3 = 100.00 L/dia-homem,
+#        abaixo do mínimo de 150 do CEPEA/Esalq (2012) para ordenha manual (R-IND-10)
 #   Outros indicadores:
 #   pct_alimentacao_coe = (17000 / 30000) * 100 = 56.67% (dentro de 40% a 65%)
 #   pct_concentrado_receita = (6300 / 22500) * 100 = 28.00% (< 30-35%)
@@ -99,6 +101,8 @@ esperado:
   causas:
     - preco_recebido_baixo
     - rebanho_reproducao
+    - escala_baixa
   recomendacoes:
     - negociar_com_laticinio
     - manejo_reprodutivo
+    - avaliar_escala

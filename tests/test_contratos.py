@@ -31,7 +31,7 @@ def test_base_exemplo_carrega():
 def test_base_real_carrega():
     base = carregar_base(PASTA_CONHECIMENTO)
     assert base.versao == "0.1"
-    assert len(base.regras) == 13
+    assert len(base.regras) == 30
     assert len(base.perguntas) == 22
     assert len(base.secoes) == 6
     assert "preco_leite_uf" in base.variaveis

@@ -17,6 +17,8 @@ BASE = carregar_base()
 # Marcas da régua de custos nos casos de situação (R$/mês): COE < COT < CT.
 COE, COT, CT = 60000.0, 72000.0, 77000.0
 CUSTOS = {"coe": COE, "cot": COT, "ct": CT}
+# Fazenda sem lucro (curto prazo): é o que as regras de causa esperam da situação.
+SEM_LUCRO = {"receita_total": 65000.0, **CUSTOS}
 
 
 def _inferir(**fatos: float) -> Resultado:
@@ -78,6 +80,11 @@ CASOS = [
         id="R-IND-09",
     ),
     pytest.param(
+        {"litros_dia_homem": 120.0},
+        "R-IND-10", "mao_obra_nivel", "baixa",
+        id="R-IND-10",
+    ),
+    pytest.param(
         {"receita_total": 80000.0, **CUSTOS},
         "R-SIT-01", "situacao_economica", "lucro",
         id="R-SIT-01",
@@ -97,6 +104,87 @@ CASOS = [
         "R-SIT-04", "situacao_economica", "prejuizo",
         id="R-SIT-04",
     ),
+    pytest.param(
+        {"preco_leite_fazenda": 2.90, "preco_leite_uf": 3.04, **SEM_LUCRO},
+        "R-CAU-01", "causa", "preco_recebido_baixo",
+        id="R-CAU-01",
+    ),
+    pytest.param(
+        {"pct_alimentacao_coe": 68.0, "litros_vaca_dia": 20.0, **SEM_LUCRO},
+        "R-CAU-02", "causa", "custo_alimentar_alto",
+        id="R-CAU-02",
+    ),
+    pytest.param(
+        {"pct_concentrado_receita": 45.0, **SEM_LUCRO},
+        "R-CAU-03", "causa", "custo_alimentar_alto",
+        id="R-CAU-03",
+    ),
+    pytest.param(
+        {"pct_vacas_lactacao": 60.0, **SEM_LUCRO},
+        "R-CAU-04", "causa", "rebanho_reproducao",
+        id="R-CAU-04",
+    ),
+    pytest.param(
+        {"litros_vaca_dia": 8.0, **SEM_LUCRO},
+        "R-CAU-05", "causa", "produtividade_baixa",
+        id="R-CAU-05",
+    ),
+    pytest.param(
+        {"ccs": 600.0},
+        "R-CAU-06", "causa", "qualidade_leite",
+        id="R-CAU-06",
+    ),
+    pytest.param(
+        {"litros_dia_homem": 120.0, **SEM_LUCRO},
+        "R-CAU-07", "causa", "escala_baixa",
+        id="R-CAU-07",
+    ),
+    pytest.param(
+        {"preco_leite_fazenda": 2.90, "preco_leite_uf": 3.04, **SEM_LUCRO},
+        "R-REC-01", "recomendacao", "negociar_com_laticinio",
+        id="R-REC-01",
+    ),
+    pytest.param(
+        {"pct_alimentacao_coe": 68.0, "litros_vaca_dia": 20.0, **SEM_LUCRO},
+        "R-REC-02", "recomendacao", "revisar_dieta_com_nutricionista",
+        id="R-REC-02",
+    ),
+    pytest.param(
+        {"pct_alimentacao_coe": 68.0, "litros_vaca_dia": 20.0,
+         "troca_leite_milho_uf": 2.0, "troca_leite_milho_uf_media_12m": 2.5, **SEM_LUCRO},
+        "R-REC-03", "recomendacao", "planejar_compra_de_insumos",
+        id="R-REC-03",
+    ),
+    pytest.param(
+        {"litros_vaca_dia": 8.0, **SEM_LUCRO},
+        "R-REC-04", "recomendacao", "revisar_dieta_com_nutricionista",
+        id="R-REC-04",
+    ),
+    pytest.param(
+        {"pct_vacas_lactacao": 60.0, **SEM_LUCRO},
+        "R-REC-05", "recomendacao", "manejo_reprodutivo",
+        id="R-REC-05",
+    ),
+    pytest.param(
+        {"cpp": 400.0},
+        "R-REC-06", "recomendacao", "melhorar_higiene_ordenha",
+        id="R-REC-06",
+    ),
+    pytest.param(
+        {"ccs": 600.0},
+        "R-REC-07", "recomendacao", "controlar_mastite",
+        id="R-REC-07",
+    ),
+    pytest.param(
+        {"litros_dia_homem": 120.0, **SEM_LUCRO},
+        "R-REC-08", "recomendacao", "avaliar_escala",
+        id="R-REC-08",
+    ),
+    pytest.param(
+        {"receita_total": 80000.0, **CUSTOS},
+        "R-REC-09", "recomendacao", "manter_controle_e_avaliar_expansao",
+        id="R-REC-09",
+    ),
 ]  # fmt: skip
 
 
@@ -104,7 +192,8 @@ CASOS = [
 def test_regra_dispara_e_conclui(fatos: dict, regra: str, fato: str, valor: str):
     resultado = _inferir(**fatos)
     assert regra in _disparadas(resultado)
-    assert resultado.memoria.valor(fato).valor == valor
+    # Causa e recomendação têm vários valores: basta o esperado estar entre eles.
+    assert valor in [f.valor for f in resultado.memoria.valores(fato)]
 
 
 def test_toda_regra_da_base_tem_caso():
@@ -142,6 +231,7 @@ def test_regras_com_fonte_pendente():
         ),
         ({"ccs": 500.0}, "qualidade_leite"),
         ({"cpp": 300.0}, "qualidade_leite"),
+        ({"litros_dia_homem": 150.0}, "mao_obra_nivel"),
     ],
 )
 def test_indicador_no_limiar_nao_dispara(fatos: dict, fato: str):
@@ -219,3 +309,91 @@ def test_sem_ct_lucro_e_medio_prazo_nao_disparam(receita: float, esperada: str |
     fato = resultado.memoria.valor("situacao_economica")
     assert (fato.valor if fato else None) == esperada
     assert not {"R-SIT-01", "R-SIT-02"} & set(_disparadas(resultado))
+
+
+def _valores(resultado: Resultado, fato: str) -> set:
+    return {f.valor for f in resultado.memoria.valores(fato)}
+
+
+PRECO_ABAIXO = {"preco_leite_fazenda": 2.90, "preco_leite_uf": 3.04}
+
+
+@pytest.mark.parametrize(
+    ("receita", "esperada"),
+    [
+        (80000.0, set()),  # lucro: não há resultado ruim a explicar
+        (75000.0, {"preco_recebido_baixo"}),  # médio prazo
+        (65000.0, {"preco_recebido_baixo"}),  # curto prazo
+        (50000.0, {"preco_recebido_baixo"}),  # prejuízo
+    ],
+)
+def test_causa_so_explica_fazenda_sem_lucro(receita: float, esperada: set):
+    """O mesmo preço abaixo do mercado só vira causa quando a fazenda não tem lucro."""
+    resultado = _inferir(receita_total=receita, **PRECO_ABAIXO, **CUSTOS)
+    assert _valores(resultado, "causa") == esperada
+
+
+def test_sem_situacao_nao_ha_causa():
+    """Sem CT, a fazenda que cobre o COT fica sem situação, e a causa espera por ela."""
+    resultado = _inferir(receita_total=75000.0, coe=COE, cot=COT, **PRECO_ABAIXO)
+    assert resultado.memoria.valor("preco_leite").valor == "abaixo_mercado"
+    assert not resultado.memoria.tem("causa")
+    assert not resultado.memoria.tem("recomendacao")
+
+
+def test_qualidade_vira_causa_mesmo_com_lucro():
+    """Leite fora da IN 76 sofre desconto em qualquer situação (R-CAU-06)."""
+    resultado = _inferir(ccs=600.0, receita_total=80000.0, **CUSTOS)
+    assert _valores(resultado, "causa") == {"qualidade_leite"}
+    assert _valores(resultado, "recomendacao") == {
+        "manter_controle_e_avaliar_expansao",
+        "melhorar_higiene_ordenha",
+        "controlar_mastite",
+    }
+
+
+def test_cpp_alta_nao_recomenda_controle_de_mastite():
+    """Só a CCS alta aponta mastite; a CPP alta pede higiene e refrigeração."""
+    resultado = _inferir(cpp=400.0)
+    assert _valores(resultado, "recomendacao") == {"melhorar_higiene_ordenha"}
+
+
+def test_duas_evidencias_de_custo_alimentar_combinam_o_cf():
+    """OU na causa: 0,8 + 0,7 × 0,2 = 0,94; a recomendação já lê o CF combinado (D3)."""
+    resultado = _inferir(
+        pct_alimentacao_coe=68.0, litros_vaca_dia=20.0, pct_concentrado_receita=45.0,
+        **SEM_LUCRO,
+    )  # fmt: skip
+    causa = resultado.memoria.valor("causa")
+    assert (causa.valor, causa.cf) == ("custo_alimentar_alto", 0.94)
+    assert [o.detalhe for o in causa.origens] == ["R-CAU-02", "R-CAU-03"]
+    rec = resultado.memoria.valor("recomendacao")
+    assert rec.valor == "revisar_dieta_com_nutricionista"
+    assert rec.cf == 0.752  # 0,8 × 0,94
+
+
+def test_duas_causas_levam_a_mesma_recomendacao():
+    """OU na recomendação: custo alimentar (0,8 × 0,8) e produtividade (0,7 × 0,6)."""
+    resultado = _inferir(pct_alimentacao_coe=68.0, litros_vaca_dia=8.0, **SEM_LUCRO)
+    rec = resultado.memoria.valor("recomendacao")
+    assert rec.valor == "revisar_dieta_com_nutricionista"
+    assert rec.cf == 0.7912  # 0,64 + 0,42 × (1 − 0,64)
+    assert [o.detalhe for o in rec.origens] == ["R-REC-02", "R-REC-04"]
+
+
+@pytest.mark.parametrize(
+    ("alimentacao", "esperada"),
+    [
+        (68.0, {"revisar_dieta_com_nutricionista", "planejar_compra_de_insumos"}),
+        (50.0, set()),  # troca ruim sem custo alimentar alto: nada a recomendar
+    ],
+)
+def test_troca_desfavoravel_so_pesa_com_custo_alimentar_alto(
+    alimentacao: float, esperada: set
+):
+    resultado = _inferir(
+        pct_alimentacao_coe=alimentacao, litros_vaca_dia=20.0,
+        troca_leite_milho_uf=2.0, troca_leite_milho_uf_media_12m=2.5, **SEM_LUCRO,
+    )  # fmt: skip
+    assert resultado.memoria.valor("troca_leite_milho_nivel").valor == "desfavoravel"
+    assert _valores(resultado, "recomendacao") == esperada

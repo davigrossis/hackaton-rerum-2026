@@ -273,12 +273,19 @@ conclusoes:
     unico: true
     valores: [fora_in76, dentro_in76]
 
+  - nome: mao_obra_nivel
+    descricao: Avaliação da produtividade da mão de obra (litros por dia por pessoa)
+    camada: indicador
+    tipo: categoria
+    unico: true
+    valores: [baixa, adequada]
+
   - nome: causa
     descricao: Causas prováveis diagnosticadas para a situação econômica da fazenda
     camada: causa
     tipo: categoria
     unico: false
-    valores: [preco_recebido_baixo, custo_alimentar_alto, rebanho_reproducao, qualidade_leite, escala_baixa]
+    valores: [preco_recebido_baixo, custo_alimentar_alto, rebanho_reproducao, produtividade_baixa, qualidade_leite, escala_baixa]
 
   - nome: recomendacao
     descricao: Recomendações técnicas, nutricionais e gerenciais formuladas pelo sistema
@@ -288,7 +295,9 @@ conclusoes:
     valores:
       - negociar_com_laticinio
       - revisar_dieta_com_nutricionista
+      - planejar_compra_de_insumos
       - manejo_reprodutivo
       - melhorar_higiene_ordenha
+      - controlar_mastite
       - avaliar_escala
       - manter_controle_e_avaliar_expansao
