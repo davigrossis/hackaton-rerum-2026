@@ -47,6 +47,20 @@ CSS = f"""
 .el-situacao-curto_prazo {{ border-left: 8px solid {FENO}; }}
 .el-situacao-prejuizo {{ border-left: 8px solid {VERMELHO}; }}
 
+.el-explicacao-situacao {{
+    min-height: 7.5rem;
+    padding: .75rem .9rem;
+    border: 1px solid rgba(128, 128, 128, .2);
+    border-radius: 8px;
+    background: rgba(128, 128, 128, .04);
+    font-size: .9rem;
+    line-height: 1.4;
+}}
+.el-explicacao-situacao strong {{
+    display: block;
+    margin-bottom: .35rem;
+}}
+
 .el-badge {{
     display: inline-block;
     padding: 0.2rem 0.6rem;
