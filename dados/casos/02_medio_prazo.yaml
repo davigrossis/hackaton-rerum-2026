@@ -1,0 +1,96 @@
+# Caso 2: Fazenda em equilíbrio de médio prazo (COT <= Receita Total < CT).
+# Contas feitas à mão (todas conferidas em 2 casas decimais):
+#   receita_leite = 24000 * 3.04 = 72960.00
+#   receita_total = 72960.00 + 0.00 = 72960.00
+#   custo_alimentar = 19200 + 10800 + 1500 = 31500.00
+#   coe = 31500 + 12500 + 3000 + 4000 + 3000 = 54000.00
+#   cot = 54000 + 6000 + 8000 = 68000.00
+#   remuneracao_capital = 1440000 * 0.005 = 7200.00
+#   ct = 68000 + 7200 = 75200.00
+#   coe_por_litro = 54000 / 24000 = 2.25
+#   cot_por_litro = 68000 / 24000 = 2.83
+#   ct_por_litro = 75200 / 24000 = 3.13
+#   margem_bruta = 72960 - 54000 = 18960.00
+#   margem_liquida = 72960 - 68000 = 4960.00
+#   lucro = 72960 - 75200 = -2240.00
+#   Enquadramento Matsunaga (1976): COT (68000) <= Receita (72960) < CT (75200) -> medio_prazo
+#   Indicadores zootécnicos e de eficiência:
+#   pct_vacas_lactacao = (40 / 48) * 100 = 83.33% (ideal: 80% a 85%)
+#   litros_vaca_dia = 24000 / (40 * 30) = 20.00 L/dia
+#   pct_alimentacao_coe = (31500 / 54000) * 100 = 58.33% (faixa saudável: 40% a 65%)
+#   pct_concentrado_receita = (19200 / 72960) * 100 = 26.32% (ideal < 30% a 35%)
+#   litros_ha = 24000 / 50 = 480.00 L/ha
+#   litros_dia_homem = (24000 / 30) / 3 = 266.67 L/dia-homem
+#   preco_concentrado_kg = 19200 / 12000 = 1.60 R$/kg
+#   preco_leite_relativo_uf = 3.04 / 3.04 = 1.00 (na média da UF)
+id: medio_prazo
+nome: "Caso 2 — Fazenda em equilíbrio de médio prazo"
+descricao: >
+  Propriedade típica em MG (09/2026) com 40 vacas em lactação e 8 secas (83,33% em lactação),
+  produzindo 24.000 L/mês (20 L/vaca/dia) ao preço médio estadual da CONAB (R$ 3,04/L).
+  A receita bruta (R$ 72.960) cobre o COE (R$ 54.000, margem bruta +R$ 18.960) e o COT
+  (R$ 68.000, margem líquida +R$ 4.960), garantindo a reposição de máquinas e a remuneração
+  familiar no médio prazo. Porém, não remunera integralmente o custo de oportunidade
+  do capital investido (CT = R$ 75.200, lucro econômico = -R$ 2.240,00).
+
+entradas:
+  uf: MG
+  mes_referencia: "09/2026"
+  vacas_lactacao: 40
+  vacas_secas: 8
+  producao_litros: 24000.0
+  preco_leite_fazenda: 3.04
+  outras_receitas: 0.0
+  custo_concentrado: 19200.0
+  concentrado_kg: 12000.0
+  custo_volumoso: 10800.0
+  custo_mineral: 1500.0
+  custo_mao_obra_contratada: 12500.0
+  custo_sanidade_reproducao: 3000.0
+  custo_energia_combustivel: 4000.0
+  custo_outros: 3000.0
+  depreciacao: 6000.0
+  pro_labore: 8000.0
+  capital_investido: 1440000.0
+  area_ha: 50.0
+  pessoas: 3.0
+  ccs: 250.0
+  cpp: 60.0
+
+esperado:
+  externos:
+    preco_leite_uf: 3.04
+    preco_leite_uf_media_12m: 2.5642
+    preco_milho_uf: 1.07
+    preco_diesel_uf: 6.69
+    troca_leite_milho_uf: 2.8411
+    troca_leite_milho_uf_media_12m: 2.5713
+  indicadores:
+    receita_leite: 72960.00
+    receita_total: 72960.00
+    custo_alimentar: 31500.00
+    coe: 54000.00
+    cot: 68000.00
+    remuneracao_capital: 7200.00
+    ct: 75200.00
+    coe_por_litro: 2.25
+    cot_por_litro: 2.83
+    ct_por_litro: 3.13
+    margem_bruta: 18960.00
+    margem_liquida: 4960.00
+    lucro: -2240.00
+    pct_vacas_lactacao: 83.33
+    litros_vaca_dia: 20.00
+    pct_alimentacao_coe: 58.33
+    pct_concentrado_receita: 26.32
+    litros_ha: 480.00
+    litros_dia_homem: 266.67
+    preco_concentrado_kg: 1.60
+    preco_leite_relativo_uf: 1.00
+  situacao_economica: medio_prazo
+  indicadores_concluidos:
+    custo_alimentar_nivel: adequado
+    lactacao_nivel: adequada
+    qualidade_leite: dentro_in76
+  causas: []
+  recomendacoes: []

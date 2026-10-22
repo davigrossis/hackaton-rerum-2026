@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import streamlit as st
 
@@ -64,7 +65,9 @@ def renderizar_mock(respostas: dict[str, Any]) -> None:
             unsafe_allow_html=True,
         )
         st.caption("Situação econômica")
-        st.markdown('<div class="el-situacao">médio prazo</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="el-situacao">médio prazo</div>', unsafe_allow_html=True
+        )
         st.write(
             "Este parecer é só uma demonstração do fluxo da tela. "
             "A classificação real virá das regras de produção e do motor "
