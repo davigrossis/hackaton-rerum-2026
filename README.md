@@ -16,6 +16,9 @@ pytest -q                          # todos os testes; o que cada arquivo testa: 
 ruff check . && ruff format .      # lint e formatação
 ```
 
+Na barra lateral, selecione **Base de conhecimento** para consultar a versão,
+as condições, conclusões, confiança e fontes de todas as regras usadas pelo motor.
+
 ## Estrutura
 | Pasta | Papel no modelo conceitual |
 |---|---|
